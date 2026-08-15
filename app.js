@@ -42,7 +42,7 @@
   }
 
   // ───────────── 라우터 ─────────────
-  const TABS = ["home", "pt", "computer", "economy", "data", "quiz"];
+  const TABS = ["home", "design", "example", "pt", "computer", "economy", "data", "quiz"];
 
   function route() {
     let tab = (location.hash || "#home").slice(1);
@@ -177,6 +177,187 @@
     updateMachine();
   }
 
+  // ───────────── 저장되는 입력란 ─────────────
+  // 아이가 적은 내용을 이 기기에 보관한다. 서버로 보내지 않는다.
+  function savedField(key, label, placeholder, rows) {
+    return `<div class="field">
+      <label class="field-label" for="f-${key}">${label}</label>
+      <textarea id="f-${key}" data-field="${key}" rows="${rows || 3}" placeholder="${placeholder || ""}"></textarea>
+      <span class="field-saved" data-saved-for="${key}"></span>
+    </div>`;
+  }
+
+  function bindFields(root) {
+    root.querySelectorAll("textarea[data-field]").forEach((ta) => {
+      const key = "tvi_field_" + ta.dataset.field;
+      const mark = root.querySelector(`[data-saved-for="${ta.dataset.field}"]`);
+      const stored = localStorage.getItem(key);
+      if (stored) {
+        ta.value = stored;
+        if (mark) mark.textContent = "저장됨";
+      }
+      let timer = null;
+      ta.addEventListener("input", () => {
+        localStorage.setItem(key, ta.value);
+        if (!mark) return;
+        mark.textContent = "저장 중…";
+        clearTimeout(timer);
+        timer = setTimeout(() => {
+          mark.textContent = ta.value.trim() ? "저장됨" : "";
+        }, 500);
+      });
+    });
+  }
+
+  // ───────────── 설계: 질문으로 정리하기 ─────────────
+  function renderDesign() {
+    const d = CONTENT.design;
+
+    const blocks = d.blocks
+      .map(
+        (b) => `<article class="card design-block">
+        <div class="db-head"><span class="db-n">${b.n}</span><h3>${b.title}</h3></div>
+        <p class="db-why">${b.why}</p>
+
+        <ol class="warmup">
+          ${b.warmup.map((w) => `<li>${w}</li>`).join("")}
+        </ol>
+
+        <p class="db-core">${b.core}</p>
+        ${savedField(b.id, "내 답", b.placeholder, 4)}
+
+        <div class="ws">
+          <p class="ws-weak"><span>약한 답</span>${b.weak}</p>
+          <p class="ws-strong"><span>강한 답</span>${b.strong}</p>
+        </div>
+
+        <details class="hintbox"><summary>막히면 열기</summary><div class="sp-body">${b.hint}</div></details>
+      </article>`
+      )
+      .join("");
+
+    const view = $("#view-design");
+    view.innerHTML = `
+      ${sectionHead("Design Your Talk", "내 발표 설계하기", d.intro)}
+      <article class="card"><p class="definition">${d.howto}</p></article>
+      ${blocks}
+      <article class="card">
+        <h3>다 적었으면</h3>
+        <ul class="points">
+          <li>‘예시’ 탭을 열어 완성본 수준의 발표안과 비교해 보자. 다르다고 틀린 게 아니다 — 어디가 왜 다른지가 중요하다.</li>
+          <li>여기 적은 답은 그대로 발표 3장(목적)과 4장(연구 질문)의 원고가 된다.</li>
+        </ul>
+        <a class="btn-primary" href="#example">예시 발표 보러 가기</a>
+      </article>
+    `;
+    bindFields(view);
+  }
+
+  // ───────────── 예시: 완성본 수준 발표안 ─────────────
+  function renderExample() {
+    const e = CONTENT.example;
+    const totalSecAll = e.slides.reduce((a, s) => a + s.sec, 0);
+    const totalMin = Math.floor(totalSecAll / 60);
+    const totalSec = totalSecAll % 60;
+
+    const slides = e.slides
+      .map((s) => {
+        const screen = `<div class="slide-screen">${s.screen
+          .map((line) => (line === "" ? '<p class="sc-gap"></p>' : `<p>${line}</p>`))
+          .join("")}</div>`;
+
+        const key = s.keyLine
+          ? `<div class="ex-key"><p class="line">${s.keyLine}</p><p class="note">${s.keyNote}</p></div>`
+          : "";
+
+        const blanks = s.blanks
+          ? s.blanks
+              .map(
+                (b) => `<div class="blank">
+                  <p class="blank-title">채워야 할 칸 — ${b.label}</p>
+                  <p class="blank-hint">${b.hint}</p>
+                  ${savedField(b.id, "내가 채운 내용", "", 3)}
+                </div>`
+              )
+              .join("")
+          : "";
+
+        return `<article class="card ex-slide ${s.star ? "star" : ""}">
+          <div class="slide-head">
+            <span class="slide-no">${s.n}장${s.star ? " ★" : ""}</span>
+            <span class="slide-title">${s.title}</span>
+            <span class="slide-time">${s.sec}초</span>
+          </div>
+
+          <p class="ex-label">화면에 넣을 것</p>
+          ${screen}
+
+          <p class="ex-label">말할 것</p>
+          <blockquote class="ex-script">${s.script}${
+            s.script2 ? `<span class="script-break"></span>${s.script2}` : ""
+          }</blockquote>
+
+          ${key}
+          ${blanks}
+
+          <div class="ex-teacher"><span class="et-tag">선생님이 보는 것</span>${s.teacher}</div>
+          ${s.qHint ? `<div class="ex-qhint">${s.qHint}</div>` : ""}
+          <p class="ex-short"><span>짧게 갈 때</span>${s.short}</p>
+        </article>`;
+      })
+      .join("");
+
+    const view = $("#view-example");
+    view.innerHTML = `
+      ${sectionHead("Worked Example", "예시 발표 — 8/26 중간발표", e.lead)}
+
+      <div class="ex-cover">
+        <p class="ex-cover-title">${e.titleLine}</p>
+        <p class="ex-cover-sub">${e.subtitleLine}</p>
+        <p class="ex-cover-time">전체 ${e.slides.length}장 · 목표 ${totalMin}분 ${totalSec}초</p>
+      </div>
+
+      <article class="card">
+        <h3>시간 배분</h3>
+        <p class="definition">${e.timeNote}</p>
+        <p class="definition" style="margin-top:8px">${e.timeAdvice}</p>
+      </article>
+
+      <div class="warnbox">${e.warn}</div>
+
+      ${slides}
+
+      ${sectionHead("Q&A", "예상 질문과 답", e.qna.intro)}
+      ${e.qna.items
+        .map(
+          (q) => `<article class="card qna">
+            <p class="qna-q">${q.q}</p>
+            <p class="qna-a">${q.a}</p>
+            ${q.note ? `<p class="qna-note">${q.note}</p>` : ""}
+          </article>`
+        )
+        .join("")}
+
+      ${sectionHead("Before You Present", "발표 전 마지막 점검")}
+      <article class="card">
+        <ul class="check-list">
+          ${e.checklist
+            .map(
+              (c) => `<li><label><input type="checkbox" data-check="${c.id}"><span class="c-task">${c.text}</span></label></li>`
+            )
+            .join("")}
+        </ul>
+      </article>
+    `;
+
+    bindFields(view);
+    view.querySelectorAll("input[data-check]").forEach((box) => {
+      const k = "tvi_check_" + box.dataset.check;
+      box.checked = localStorage.getItem(k) === "1";
+      box.addEventListener("change", () => localStorage.setItem(k, box.checked ? "1" : "0"));
+    });
+  }
+
   // ───────────── 발표 ─────────────
   function renderPresentation() {
     const p = CONTENT.presentation;
@@ -199,6 +380,11 @@
 
     $("#view-pt").innerHTML = `
       ${sectionHead("Midterm · 8/26", "중간발표 지도", "슬라이드는 8장. ★ 표시(5·6·7장)가 이 발표의 차별점이다 — 시간이 부족해 장수를 줄여도 5·6장은 절대 빼지 않는다.")}
+
+      <article class="card known">
+        <h3>이 탭은 참조용이다</h3>
+        <p class="definition">여기는 각 장에 무엇이 들어가고 왜 그런지를 설명하는 지도다. 실제로 발표를 준비할 때는 <a href="#design">설계</a> 탭에서 네 답을 먼저 적고, <a href="#example">예시</a> 탭에서 완성본 수준의 발표안과 대본을 보는 순서가 빠르다.</p>
+      </article>
 
       <article class="card">
         <h3>발표 형식</h3>
@@ -298,6 +484,11 @@
         ${d.mission.spoilers
           .map((s) => `<details class="spoiler"><summary>${s.q}</summary><div class="sp-body">${s.body}</div></details>`)
           .join("")}
+      </article>
+
+      <article class="card known">
+        <h3>${d.mission.known.title}</h3>
+        <p class="definition">${d.mission.known.body}</p>
       </article>
 
       <article class="card">
@@ -454,6 +645,8 @@
   initTheme();
   initDday();
   renderHome();
+  renderDesign();
+  renderExample();
   renderPresentation();
   renderComputer();
   renderEconomy();
