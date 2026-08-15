@@ -1,0 +1,465 @@
+// ═══════════════════════════════════════════════════════════════
+//  TVI 탐구 가이드 — 앱 동작 코드
+//  내용을 고치려면 content.js(콘텐츠) / questions.js(퀴즈)만 보면 됩니다.
+// ═══════════════════════════════════════════════════════════════
+
+(function () {
+  "use strict";
+
+  const $ = (sel) => document.querySelector(sel);
+
+  // ───────────── 테마 ─────────────
+  function initTheme() {
+    const saved = localStorage.getItem("tvi_theme");
+    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const theme = saved || (prefersDark ? "dark" : "light");
+    document.documentElement.setAttribute("data-theme", theme);
+    $("#themeToggle").addEventListener("click", () => {
+      const next = document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark";
+      document.documentElement.setAttribute("data-theme", next);
+      localStorage.setItem("tvi_theme", next);
+    });
+  }
+
+  // ───────────── D-day ─────────────
+  function daysUntil(iso) {
+    const [y, m, d] = iso.split("-").map(Number);
+    const target = new Date(y, m - 1, d);
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    return Math.round((target - today) / 86400000);
+  }
+
+  function initDday() {
+    const chip = $("#ddayChip");
+    const mid = daysUntil(CONTENT.meta.midterm);
+    const fin = daysUntil(CONTENT.meta.final);
+    if (mid > 0)       chip.textContent = "중간발표 D-" + mid;
+    else if (mid === 0) chip.textContent = "오늘 중간발표!";
+    else if (fin > 0)  chip.textContent = "최종발표 D-" + fin;
+    else if (fin === 0) chip.textContent = "오늘 최종발표!";
+    else               chip.textContent = "완주 🎉";
+  }
+
+  // ───────────── 라우터 ─────────────
+  const TABS = ["home", "pt", "computer", "economy", "data", "quiz"];
+
+  function route() {
+    let tab = (location.hash || "#home").slice(1);
+    if (!TABS.includes(tab)) tab = "home";
+    TABS.forEach((t) => {
+      $("#view-" + t).hidden = t !== tab;
+    });
+    document.querySelectorAll(".tabs a").forEach((a) => {
+      if (a.dataset.tab === tab) a.setAttribute("aria-current", "page");
+      else a.removeAttribute("aria-current");
+    });
+    window.scrollTo(0, 0);
+  }
+
+  // ───────────── 공용 렌더 조각 ─────────────
+  function sectionHead(eyebrow, title, intro) {
+    return `<div><p class="eyebrow">${eyebrow}</p><h2 class="section-title">${title}</h2>${
+      intro ? `<p class="section-intro">${intro}</p>` : ""
+    }</div>`;
+  }
+
+  function conceptCard(c) {
+    let tableHtml = "";
+    if (c.table) {
+      tableHtml = `<div class="tbl-wrap"><table class="tbl"><thead><tr>${c.table.head
+        .map((h) => `<th>${h}</th>`)
+        .join("")}</tr></thead><tbody>${c.table.rows
+        .map((r) => `<tr><td><code>${r[0]}</code></td><td>${r[1]}</td></tr>`)
+        .join("")}</tbody></table></div>`;
+    }
+    return `<article class="card">
+      ${c.tag ? `<span class="tag">${c.tag}</span>` : ""}
+      <h3>${c.title}</h3>
+      <p class="analogy">${c.analogy}</p>
+      <p class="definition">${c.definition}</p>
+      ${tableHtml}
+      ${c.points && c.points.length ? `<ul class="points">${c.points.map((p) => `<li>${p}</li>`).join("")}</ul>` : ""}
+    </article>`;
+  }
+
+  // ───────────── 홈 ─────────────
+  function renderHome() {
+    const h = CONTENT.home;
+
+    const timeline = h.timeline
+      .map((t) => {
+        const started = daysUntil(t.from) <= 0;
+        const notOver = daysUntil(t.to) >= 0;
+        const now = started && notOver;
+        const range = t.from.slice(5).replace("-", "/") + (t.from === t.to ? "" : " ~ " + t.to.slice(5).replace("-", "/"));
+        return `<li class="${now ? "now" : ""}">
+          <span class="t-range">${range}</span>${now ? '<span class="now-chip">지금</span>' : ""}
+          <p class="t-label">${t.label}</p>
+          <p class="t-sub">${t.sub}</p>
+        </li>`;
+      })
+      .join("");
+
+    $("#view-home").innerHTML = `
+      <div class="hero">
+        <p class="quote">${h.heroQuote}</p>
+        <p class="big-q">환율이 싸다 <em>=</em> 여행이 싸다<em>?</em></p>
+        <p class="lead">${h.heroLead}</p>
+      </div>
+
+      <div class="machine">
+        <p class="m-eyebrow">TVI FORMULA MACHINE</p>
+        <p class="formula">TVI =
+          <span class="frac">
+            <span class="top">1,000,000원</span><br>
+            <span class="bottom">환율 × 1일 생활비</span>
+          </span>
+        </p>
+        <div class="result">
+          <span class="num" id="mDays">10</span><span class="unit">일</span>
+          <span class="sub" id="mSub"></span>
+        </div>
+        <div class="slider-row">
+          <label>환율 — 현지 돈 1단위에 몇 원? <output id="mRateOut"></output></label>
+          <input type="range" id="mRate" min="100" max="2000" step="50" value="1000" aria-label="환율 슬라이더 (가상 예시)">
+        </div>
+        <div class="slider-row">
+          <label>1일 생활비 — 현지 돈으로 얼마? <output id="mCostOut"></output></label>
+          <input type="range" id="mCost" min="10" max="300" step="10" value="100" aria-label="1일 생활비 슬라이더 (가상 예시)">
+        </div>
+        <p class="m-note">슬라이더 값은 전부 가상의 예시입니다. 진짜 숫자는 네가 직접 모은다. 환율이 유리해도 생활비가 비싸면 날짜가 줄어드는 걸 눈으로 확인해 보자.</p>
+      </div>
+
+      ${sectionHead("Research Question", "연구 질문")}
+      <div class="key-line">
+        <p class="line">${h.researchQuestion}</p>
+        <p class="note">${h.purposeLine}<br>— ${h.evaluationLine}</p>
+      </div>
+
+      ${sectionHead("5 Countries", "대상 국가", h.countriesNote)}
+      <div class="country-grid">
+        ${h.countries
+          .map(
+            (c) => `<div class="country"><span class="cflag">${c.flag}</span><span class="cname">${c.name}</span><br><span class="ccur">${c.currency}</span></div>`
+          )
+          .join("")}
+      </div>
+      <article class="card">
+        <h3>왜 2005년부터, 20년인가</h3>
+        <p class="definition">${h.why2005}</p>
+      </article>
+
+      ${sectionHead("Timeline", "전체 일정")}
+      <article class="card"><ul class="timeline">${timeline}</ul></article>
+
+      ${sectionHead("This Week", "8월, 이번에 할 일")}
+      <article class="card">
+        <ul class="week-list">
+          ${h.thisWeek.map((w) => `<li><span class="w-date">${w.date}</span><span>${w.task}</span></li>`).join("")}
+        </ul>
+      </article>
+    `;
+
+    // 공식 머신 동작
+    const rate = $("#mRate"), cost = $("#mCost");
+    function updateMachine() {
+      const r = Number(rate.value), c = Number(cost.value);
+      const dayCost = r * c;
+      const days = 1000000 / dayCost;
+      $("#mDays").textContent = days >= 100 ? Math.round(days) : days.toFixed(1);
+      $("#mRateOut").textContent = r.toLocaleString() + "원";
+      $("#mCostOut").textContent = c.toLocaleString();
+      $("#mSub").textContent = `하루 비용 = ${r.toLocaleString()} × ${c.toLocaleString()} = ${dayCost.toLocaleString()}원 (가상 예시)`;
+    }
+    rate.addEventListener("input", updateMachine);
+    cost.addEventListener("input", updateMachine);
+    updateMachine();
+  }
+
+  // ───────────── 발표 ─────────────
+  function renderPresentation() {
+    const p = CONTENT.presentation;
+
+    const slides = p.slides
+      .map(
+        (s) => `<article class="card slide-card ${s.star ? "star" : ""}">
+        <div class="slide-head">
+          <span class="slide-no">${s.n}장${s.star ? " ★" : ""}</span>
+          <span class="slide-title">${s.title}</span>
+          <span class="slide-time">${s.time}</span>
+        </div>
+        <ul class="points">${s.points.map((pt) => `<li>${pt}</li>`).join("")}</ul>
+        ${s.say ? `<div class="slide-say">🗣️ ${s.say}</div>` : ""}
+        ${s.tip ? `<div class="slide-tip">${s.tip}</div>` : ""}
+        ${s.lockedRef ? `<div class="slide-tip">${s.lockedRef}</div>` : ""}
+      </article>`
+      )
+      .join("");
+
+    $("#view-pt").innerHTML = `
+      ${sectionHead("Midterm · 8/26", "중간발표 지도", "슬라이드는 8장. ★ 표시(5·6·7장)가 이 발표의 차별점이다 — 시간이 부족해 장수를 줄여도 5·6장은 절대 빼지 않는다.")}
+
+      <article class="card">
+        <h3>발표 형식</h3>
+        <ul class="points">${p.format.map((f) => `<li>${f}</li>`).join("")}</ul>
+      </article>
+
+      <div class="key-line">
+        <p class="line">${p.keyLine}</p>
+        <p class="note">${p.keyLineNote}</p>
+      </div>
+
+      ${slides}
+
+      ${sectionHead("Weekday Plan", "평일 준비 일정", "하루 30분. 끝낸 것은 체크하면 저장된다.")}
+      <article class="card">
+        <ul class="check-list" id="weekPlan">
+          ${p.weekPlan
+            .map(
+              (w) => `<li><label><input type="checkbox" data-check="${w.id}"><span class="c-date">${w.date}</span><span class="c-task">${w.task}</span></label></li>`
+            )
+            .join("")}
+        </ul>
+      </article>
+
+      ${sectionHead("Rehearsal", "리허설 — 8/23, 세 번")}
+      <article class="card">
+        <ul class="points">
+          ${p.rehearsal.map((r) => `<li><strong>${r.round}</strong> — ${r.goal}</li>`).join("")}
+        </ul>
+        <h3 style="margin-top:14px">마지막 점검 세 가지</h3>
+        <ul class="points">${p.finalChecks.map((c) => `<li>${c}</li>`).join("")}</ul>
+        <div class="slide-tip">${p.aiAnswerHint}</div>
+      </article>
+    `;
+
+    // 체크리스트 저장/복원
+    document.querySelectorAll('#view-pt input[data-check]').forEach((box) => {
+      const key = "tvi_check_" + box.dataset.check;
+      box.checked = localStorage.getItem(key) === "1";
+      box.addEventListener("change", () => {
+        localStorage.setItem(key, box.checked ? "1" : "0");
+      });
+    });
+  }
+
+  // ───────────── 컴퓨터 / 경제 ─────────────
+  function renderComputer() {
+    const c = CONTENT.computer;
+    $("#view-computer").innerHTML =
+      sectionHead("Computer Basics", "컴퓨터 기초", c.intro) + c.cards.map(conceptCard).join("");
+  }
+
+  function renderEconomy() {
+    const e = CONTENT.economy;
+    $("#view-economy").innerHTML =
+      sectionHead("Economics Basics", "경제 기초", e.intro) + e.cards.map(conceptCard).join("");
+  }
+
+  // ───────────── 데이터 ─────────────
+  function renderData() {
+    const d = CONTENT.data;
+
+    $("#view-data").innerHTML = `
+      ${sectionHead("Data Story", "데이터 이야기", d.intro)}
+
+      <article class="card">
+        <h3>네 종류의 데이터, 네 곳의 출처</h3>
+        <div class="tbl-wrap"><table class="tbl">
+          <thead><tr><th>데이터</th><th>출처</th><th>방법</th><th>메모</th></tr></thead>
+          <tbody>${d.sources
+            .map((s) => `<tr><td><strong>${s.data}</strong></td><td>${s.source}</td><td>${s.how}</td><td>${s.note}</td></tr>`)
+            .join("")}</tbody>
+        </table></div>
+      </article>
+
+      ${d.judgments
+        .map((j) => `<article class="card"><h3>${j.title}</h3><p class="definition">${j.body}</p></article>`)
+        .join("")}
+
+      <article class="card">
+        <h3>${d.habit.title}</h3>
+        <ul class="points">${d.habit.items.map((i) => `<li>${i}</li>`).join("")}</ul>
+        <p class="definition" style="margin-top:8px">${d.habit.why}</p>
+      </article>
+
+      <article class="card">
+        <h3>${d.fourQuestions.title}</h3>
+        <ul class="points">${d.fourQuestions.items.map((i) => `<li>${i}</li>`).join("")}</ul>
+        <p class="definition" style="margin-top:8px">${d.fourQuestions.note}</p>
+      </article>
+
+      ${sectionHead("Discovery Mission", d.mission.title)}
+      <article class="card">
+        <p class="definition">${d.mission.intro}</p>
+        <ul class="points">${d.mission.guideQuestions.map((q) => `<li>${q}</li>`).join("")}</ul>
+        <p class="spoiler-warning" style="margin-top:12px">${d.mission.spoilerWarning}</p>
+        ${d.mission.spoilers
+          .map((s) => `<details class="spoiler"><summary>${s.q}</summary><div class="sp-body">${s.body}</div></details>`)
+          .join("")}
+      </article>
+
+      <article class="card">
+        <h3>${d.mission.collectItems.title}</h3>
+        <ul class="points">${d.mission.collectItems.items.map((i) => `<li>${i}</li>`).join("")}</ul>
+        <p class="definition" style="margin-top:8px">잊지 말 것: 조회 날짜 · 출처 URL · 통화 단위를 함께 기록한다.</p>
+      </article>
+    `;
+  }
+
+  // ───────────── 퀴즈 ─────────────
+  const quizState = { set: null, order: [], idx: 0, score: 0, wrong: [], answered: false };
+
+  function shuffle(arr) {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  function renderQuizMenu() {
+    const view = $("#view-quiz");
+    view.innerHTML = `
+      ${sectionHead("Quiz", "퀴즈", "점수보다 ‘어떤 걸 모르는지 확인하는 것’이 목적이다. 배우기 전과 후에 풀어보면 차이가 보인다.")}
+      <div class="quiz-sets">
+        ${CONTENT.quizSets
+          .map((s) => {
+            const count = QUESTIONS.filter(s.filter).length;
+            const best = localStorage.getItem("tvi_quiz_best_" + s.id);
+            return `<button class="quiz-set-btn" data-set="${s.id}">
+              <span class="qs-label">${s.label}</span>
+              <span class="qs-desc">${s.desc}</span>
+              <span class="qs-meta">${count}문항${best !== null ? " · 최고 " + best + "/" + count : ""}</span>
+            </button>`;
+          })
+          .join("")}
+      </div>
+    `;
+    view.querySelectorAll(".quiz-set-btn").forEach((btn) => {
+      btn.addEventListener("click", () => startQuiz(btn.dataset.set));
+    });
+  }
+
+  function startQuiz(setId) {
+    const set = CONTENT.quizSets.find((s) => s.id === setId);
+    quizState.set = set;
+    quizState.order = shuffle(QUESTIONS.filter(set.filter));
+    quizState.idx = 0;
+    quizState.score = 0;
+    quizState.wrong = [];
+    renderQuestion();
+  }
+
+  function renderQuestion() {
+    const view = $("#view-quiz");
+    const q = quizState.order[quizState.idx];
+    quizState.answered = false;
+
+    // 보기 순서 섞기 (정답 위치가 늘 같지 않도록)
+    const idxs = shuffle(q.choices.map((_, i) => i));
+
+    view.innerHTML = `
+      <div class="quiz-top">
+        <span class="quiz-progress">${quizState.set.label} · ${quizState.idx + 1} / ${quizState.order.length}</span>
+        <button class="quiz-quit" id="quizQuit">그만하기</button>
+      </div>
+      <article class="card">
+        <p class="q-topic">${q.topic}</p>
+        <p class="q-text">${q.question}</p>
+        <div class="choices">
+          ${idxs
+            .map((orig) => `<button class="choice-btn" data-orig="${orig}">${q.choices[orig]}</button>`)
+            .join("")}
+        </div>
+        <div id="qExplain"></div>
+        <div id="qNextWrap"></div>
+      </article>
+    `;
+
+    $("#quizQuit").addEventListener("click", renderQuizMenu);
+
+    view.querySelectorAll(".choice-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        if (quizState.answered) return;
+        quizState.answered = true;
+        const picked = Number(btn.dataset.orig);
+        const correct = picked === q.answer;
+        if (correct) quizState.score++;
+        else quizState.wrong.push(q);
+
+        view.querySelectorAll(".choice-btn").forEach((b) => {
+          b.disabled = true;
+          const o = Number(b.dataset.orig);
+          if (o === q.answer) b.classList.add("correct");
+          else if (o === picked) b.classList.add("wrong");
+        });
+
+        $("#qExplain").innerHTML = `<div class="q-explain">
+          <p class="verdict ${correct ? "ok" : "no"}">${correct ? "맞았다!" : "아니다 — 정답은 초록색 보기."}</p>
+          <p>${q.explanation}</p>
+        </div>`;
+
+        const last = quizState.idx + 1 >= quizState.order.length;
+        $("#qNextWrap").innerHTML = `<button class="btn-primary" id="qNext">${last ? "결과 보기" : "다음 문제"}</button>`;
+        $("#qNext").addEventListener("click", () => {
+          if (last) renderQuizResult();
+          else {
+            quizState.idx++;
+            renderQuestion();
+            window.scrollTo(0, 0);
+          }
+        });
+        $("#qNext").focus();
+      });
+    });
+  }
+
+  function renderQuizResult() {
+    const view = $("#view-quiz");
+    const total = quizState.order.length;
+    const score = quizState.score;
+
+    const bestKey = "tvi_quiz_best_" + quizState.set.id;
+    const prevBest = Number(localStorage.getItem(bestKey) || -1);
+    if (score > prevBest) localStorage.setItem(bestKey, String(score));
+
+    let msg;
+    const ratio = score / total;
+    if (ratio === 1) msg = "전부 맞았다. 이제 이 내용을 ‘내 말로’ 설명할 수 있는지 확인해 보자 — 발표는 말로 한다.";
+    else if (ratio >= 0.7) msg = "좋은 흐름. 틀린 문제의 해설을 읽는 것이 오늘의 진짜 공부다.";
+    else msg = "괜찮다 — 모르는 걸 확인하는 게 이 퀴즈의 목적이다. 틀린 문제를 아래에서 다시 보고, 배운 뒤 또 풀면 오르는 게 보인다.";
+
+    view.innerHTML = `
+      ${sectionHead("Result", quizState.set.label + " 세트 결과")}
+      <article class="card">
+        <div class="quiz-result-score"><span class="num">${score}</span><span class="den"> / ${total}</span></div>
+        <p class="quiz-result-msg">${msg}</p>
+        ${
+          quizState.wrong.length
+            ? `<div class="wrong-review"><h4>틀린 문제 다시 보기 (${quizState.wrong.length})</h4><ol>${quizState.wrong
+                .map((w) => `<li>${w.question}<br><span class="wr-a">→ ${w.choices[w.answer]}</span></li>`)
+                .join("")}</ol></div>`
+            : ""
+        }
+        <button class="btn-primary" id="quizAgain">다른 세트 풀기</button>
+      </article>
+    `;
+    $("#quizAgain").addEventListener("click", renderQuizMenu);
+  }
+
+  // ───────────── 시작 ─────────────
+  initTheme();
+  initDday();
+  renderHome();
+  renderPresentation();
+  renderComputer();
+  renderEconomy();
+  renderData();
+  renderQuizMenu();
+
+  window.addEventListener("hashchange", route);
+  route();
+})();

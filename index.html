@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>TVI 탐구 가이드</title>
+  <meta name="description" content="Travel Value Index — 100만원으로 5개국에서 며칠? 환율과 물가로 계산하는 여행의 실질 가치. 고1 AI 융합 탐구 프로젝트 학습 가이드.">
+  <meta name="theme-color" content="#14695A">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%2314695A'/><text x='50' y='68' font-size='52' text-anchor='middle' fill='%23F8F9F6' font-family='monospace' font-weight='bold'>₩</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=IBM+Plex+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="#home">
+        <span class="brand-mark">TVI</span>
+        <span class="brand-name">탐구 가이드</span>
+      </a>
+      <div class="topbar-right">
+        <span class="dday-chip" id="ddayChip" title="중간발표까지"></span>
+        <button class="theme-toggle" id="themeToggle" type="button" aria-label="화면 밝기 전환">◐</button>
+      </div>
+    </div>
+    <nav class="tabs" id="tabs" aria-label="섹션">
+      <a href="#home"    data-tab="home">홈</a>
+      <a href="#pt"      data-tab="pt">발표</a>
+      <a href="#computer" data-tab="computer">컴퓨터</a>
+      <a href="#economy" data-tab="economy">경제</a>
+      <a href="#data"    data-tab="data">데이터</a>
+      <a href="#quiz"    data-tab="quiz">퀴즈</a>
+    </nav>
+  </header>
+
+  <main id="main">
+    <section id="view-home" class="view" hidden></section>
+    <section id="view-pt" class="view" hidden></section>
+    <section id="view-computer" class="view" hidden></section>
+    <section id="view-economy" class="view" hidden></section>
+    <section id="view-data" class="view" hidden></section>
+    <section id="view-quiz" class="view" hidden></section>
+  </main>
+
+  <footer class="footer">
+    <p>TVI(Travel Value Index) 탐구 프로젝트의 학습 가이드 · 2026.08 ~ 10</p>
+    <p class="footer-rule">이 가이드의 예시 숫자는 전부 가상 값입니다. 진짜 데이터는 출처에서 직접, 날짜와 함께.</p>
+  </footer>
+
+  <script src="content.js"></script>
+  <script src="questions.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
