@@ -610,6 +610,212 @@ details.spoiler .sp-body {
   font-weight: 500;
 }
 
+/* ─────────────── 할 일 ─────────────── */
+
+.ov-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+.ov {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  grid-template-areas: "n label when" "n label dur";
+  gap: 0 12px;
+  align-items: center;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 13px;
+}
+.ov-n {
+  grid-area: n;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.2rem;
+  color: var(--teal);
+}
+.ov-label { grid-area: label; font-weight: 700; font-size: 0.97rem; }
+.ov-when {
+  grid-area: when;
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  color: var(--teal);
+  text-align: right;
+}
+.ov-dur {
+  grid-area: dur;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--muted);
+  text-align: right;
+}
+
+.progress-wrap { margin-top: 14px; }
+.progress-bar {
+  height: 8px;
+  background: var(--line);
+  border-radius: 99px;
+  overflow: hidden;
+}
+.progress-bar span {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: var(--teal);
+  border-radius: 99px;
+  transition: width 0.25s ease-out;
+}
+.progress-text {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--muted);
+  text-align: right;
+  margin-top: 5px;
+}
+
+.todo-block.now { border-color: var(--teal); border-width: 2px; }
+.todo-block.past { opacity: 0.72; }
+
+.tb-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 5px;
+}
+.tb-date {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--teal);
+}
+.tb-dur {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--muted);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 0 6px;
+}
+.tb-why {
+  font-size: 0.88rem;
+  color: var(--muted);
+  margin: 6px 0 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px dashed var(--line);
+}
+
+ol.tb-steps { list-style: none; counter-reset: ts; }
+ol.tb-steps li {
+  counter-increment: ts;
+  position: relative;
+  padding: 0 0 11px 27px;
+}
+ol.tb-steps li::before {
+  content: counter(ts);
+  position: absolute;
+  left: 0;
+  top: 2px;
+  width: 19px;
+  height: 19px;
+  border-radius: 50%;
+  background: var(--teal-soft);
+  color: var(--teal);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.st-t { display: block; font-size: 0.94rem; font-weight: 500; line-height: 1.5; }
+.st-d {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--muted);
+  line-height: 1.55;
+  margin-top: 2px;
+}
+
+.tb-seealso, .tb-extra {
+  font-size: 0.86rem;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+.tb-done {
+  margin-top: 10px;
+  background: var(--teal-soft);
+  border-radius: 8px;
+  padding: 9px 12px;
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+.tb-done span {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--teal);
+  display: block;
+  margin-bottom: 2px;
+}
+
+.tb-checks { margin-top: 10px; border-top: 1px solid var(--line); }
+.tb-links { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 14px; }
+.tb-links a { font-size: 0.87rem; font-weight: 500; text-decoration: none; }
+
+/* Numbeo 카드 */
+.numbeo-card { border-color: var(--teal); }
+.nb-h {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1rem;
+  margin: 18px 0 6px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+.nb-links { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.nb-link {
+  font-size: 0.88rem;
+  font-weight: 500;
+  text-decoration: none;
+  color: var(--teal);
+  border: 1.5px solid var(--teal);
+  border-radius: 8px;
+  padding: 5px 12px;
+}
+.nb-link::after { content: " ↗"; font-size: 0.8em; }
+.nb-note { font-size: 0.85rem; color: var(--muted); line-height: 1.6; margin-top: 9px; }
+.nb-en {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.nb-warn {
+  background: var(--red-soft);
+  border: 1.5px solid var(--red);
+  border-radius: 10px;
+  padding: 13px 14px;
+  margin-top: 16px;
+}
+.nb-warn-h { font-weight: 700; color: var(--red); margin-bottom: 6px; font-size: 0.95rem; }
+.nb-warn p { font-size: 0.9rem; line-height: 1.6; }
+.nb-warn-why { margin-top: 8px; color: var(--muted); }
+
+.nb-gotcha {
+  margin-top: 11px;
+  border-left: 3px solid var(--red);
+  padding: 3px 0 3px 12px;
+  font-size: 0.88rem;
+  line-height: 1.65;
+}
+
+@media (min-width: 560px) {
+  .ov-grid { grid-template-columns: 1fr 1fr; }
+}
+
 /* ─────────────── 설계: 질문 블록 ─────────────── */
 
 .db-head {

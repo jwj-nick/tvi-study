@@ -42,7 +42,7 @@
   }
 
   // ───────────── 라우터 ─────────────
-  const TABS = ["home", "design", "example", "pt", "computer", "economy", "data", "quiz"];
+  const TABS = ["home", "todo", "design", "example", "pt", "computer", "economy", "data", "quiz"];
 
   function route() {
     let tab = (location.hash || "#home").slice(1);
@@ -158,6 +158,7 @@
         <ul class="week-list">
           ${h.thisWeek.map((w) => `<li><span class="w-date">${w.date}</span><span>${w.task}</span></li>`).join("")}
         </ul>
+        <div class="tb-links" style="margin-top:12px"><a href="#todo">할 일을 순서대로 자세히 보기 →</a></div>
       </article>
     `;
 
@@ -207,6 +208,162 @@
         }, 500);
       });
     });
+  }
+
+  // ───────────── 할 일: 시간 순서 ─────────────
+  function bindChecks(root, onChange) {
+    root.querySelectorAll("input[data-check]").forEach((box) => {
+      const k = "tvi_check_" + box.dataset.check;
+      box.checked = localStorage.getItem(k) === "1";
+      box.addEventListener("change", () => {
+        localStorage.setItem(k, box.checked ? "1" : "0");
+        if (onChange) onChange();
+      });
+    });
+  }
+
+  function renderTodo() {
+    const t = CONTENT.todo;
+    const nb = t.numbeo;
+
+    const allChecks = [
+      ...t.blocks.flatMap((b) => b.checks.map((c) => c.id)),
+      ...t.minimum.checks.map((c) => c.id),
+    ];
+
+    const numbeoCard = `
+      <article class="card numbeo-card">
+        <h3>${nb.title}</h3>
+        <p class="definition">${nb.intro}</p>
+
+        <p class="nb-h">${nb.go.title}</p>
+        <p class="definition">${nb.go.body}</p>
+        <div class="nb-links">
+          ${nb.go.links
+            .map((l) => `<a class="nb-link" href="${l.url}" target="_blank" rel="noopener noreferrer">${l.name}</a>`)
+            .join("")}
+        </div>
+        <p class="nb-note">${nb.go.note}</p>
+
+        <div class="nb-warn">
+          <p class="nb-warn-h">${nb.warn.title}</p>
+          <p>${nb.warn.body}</p>
+          <p class="nb-warn-why">${nb.warn.why}</p>
+        </div>
+
+        <p class="nb-h">${nb.map.title}</p>
+        <p class="definition">${nb.map.body}</p>
+        <div class="tbl-wrap"><table class="tbl">
+          <thead><tr><th>우리 항목</th><th>섹션</th><th>사이트 표기</th></tr></thead>
+          <tbody>${nb.map.rows
+            .map((r) => `<tr><td><strong>${r[0]}</strong></td><td>${r[1]}</td><td class="nb-en">${r[2]}</td></tr>`)
+            .join("")}</tbody>
+        </table></div>
+        <p class="nb-gotcha">${nb.map.gotcha}</p>
+
+        <p class="nb-h">${nb.trust.title}</p>
+        <ul class="points">${nb.trust.items.map((i) => `<li>${i}</li>`).join("")}</ul>
+
+        <p class="nb-h">${nb.record.title}</p>
+        <ul class="points">${nb.record.items.map((i) => `<li>${i}</li>`).join("")}</ul>
+        <p class="nb-note">${nb.record.note}</p>
+      </article>`;
+
+    const blocks = t.blocks
+      .map((b) => {
+        const isNow = daysUntil(b.from) <= 0 && daysUntil(b.to) >= 0;
+        const isPast = daysUntil(b.to) < 0;
+        return `<article class="card todo-block ${isNow ? "now" : ""} ${isPast ? "past" : ""}" id="tb-${b.id}">
+          <div class="tb-head">
+            <span class="tb-date">${b.date}</span>
+            ${b.dur ? `<span class="tb-dur">${b.dur}</span>` : ""}
+            ${isNow ? '<span class="now-chip">오늘</span>' : ""}
+          </div>
+          <h3>${b.title}</h3>
+          ${b.why ? `<p class="tb-why">${b.why}</p>` : ""}
+
+          <ol class="tb-steps">
+            ${b.steps
+              .map((s) => `<li><span class="st-t">${s.t}</span>${s.d ? `<span class="st-d">${s.d}</span>` : ""}</li>`)
+              .join("")}
+          </ol>
+
+          ${b.numbeo ? '<p class="tb-seealso">아래 <a href="#nb">Numbeo 사용법</a> 카드를 함께 보자.</p>' : ""}
+          ${b.extra ? `<p class="tb-extra">${b.extra}</p>` : ""}
+          ${b.done ? `<p class="tb-done"><span>끝난 신호</span>${b.done}</p>` : ""}
+
+          <ul class="check-list tb-checks">
+            ${b.checks
+              .map((c) => `<li><label><input type="checkbox" data-check="${c.id}"><span class="c-task">${c.text}</span></label></li>`)
+              .join("")}
+          </ul>
+
+          ${
+            b.links
+              ? `<div class="tb-links">${b.links.map((l) => `<a href="${l.href}">${l.label} →</a>`).join("")}</div>`
+              : ""
+          }
+        </article>`;
+      })
+      .join("");
+
+    const view = $("#view-todo");
+    view.innerHTML = `
+      ${sectionHead("To Do", "발표까지 할 일", t.lead)}
+
+      <article class="card">
+        <div class="ov-grid">
+          ${t.overview
+            .map(
+              (o) => `<div class="ov"><span class="ov-n">${o.n}</span>
+                <span class="ov-label">${o.label}</span>
+                <span class="ov-when">${o.when}</span>
+                <span class="ov-dur">${o.dur}</span></div>`
+            )
+            .join("")}
+        </div>
+        <p class="nb-note" style="margin-top:12px">${t.overviewNote}</p>
+        <div class="progress-wrap">
+          <div class="progress-bar"><span id="tdBar"></span></div>
+          <p class="progress-text" id="tdText"></p>
+        </div>
+      </article>
+
+      ${blocks}
+
+      <div id="nb"></div>
+      ${numbeoCard}
+
+      <article class="card">
+        <h3>${t.skip.title}</h3>
+        <p class="definition">${t.skip.intro}</p>
+        <ul class="points">
+          ${t.skip.items.map((i) => `<li><strong>${i.t}</strong> — ${i.d}</li>`).join("")}
+        </ul>
+      </article>
+
+      <article class="card known">
+        <h3>${t.minimum.title}</h3>
+        <p class="definition">${t.minimum.intro}</p>
+        <ul class="check-list">
+          ${t.minimum.checks
+            .map((c) => `<li><label><input type="checkbox" data-check="${c.id}"><span class="c-task">${c.text}</span></label></li>`)
+            .join("")}
+        </ul>
+      </article>
+    `;
+
+    function updateProgress() {
+      const done = allChecks.filter((id) => localStorage.getItem("tvi_check_" + id) === "1").length;
+      const pct = Math.round((done / allChecks.length) * 100);
+      const bar = $("#tdBar");
+      if (bar) bar.style.width = pct + "%";
+      const txt = $("#tdText");
+      if (txt) txt.textContent = `${allChecks.length}개 중 ${done}개 완료`;
+    }
+
+    bindChecks(view, updateProgress);
+    updateProgress();
   }
 
   // ───────────── 설계: 질문으로 정리하기 ─────────────
@@ -645,6 +802,7 @@
   initTheme();
   initDday();
   renderHome();
+  renderTodo();
   renderDesign();
   renderExample();
   renderPresentation();
