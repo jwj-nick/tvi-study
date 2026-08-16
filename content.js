@@ -411,10 +411,10 @@ const CONTENT = {
         step: "STEP 2",
         title: "Numbeo 관찰 — 아직 옮겨 적지 않는다",
         dur: "1시간 30분",
-        why: "발표 6장(부딪힌 문제)이 여기서 나온다. 오늘은 수집이 아니라 ‘이 사이트가 무엇을 주고 무엇을 안 주는지’ 보는 날이다.",
-        numbeo: true,
+        why: "발표 6장(부딪힌 문제)이 여기서 나온다. 이번엔 수집이 아니라 ‘이 사이트가 무엇을 주고 무엇을 안 주는지’ 보는 차례다.",
+        guide: "observe",
         steps: [
-          { t: "스페인 · 일본 · 미국 페이지를 연다", d: "아래 ‘Numbeo 사용법’ 카드의 링크를 쓰면 바로 간다" },
+          { t: "스페인 · 일본 · 미국 페이지를 연다", d: "바로 아래 링크를 누르면 새 탭에서 열린다" },
           { t: "페이지 맨 위 요약 문장을 읽는다", d: "‘a family of four’로 시작하는 문장이 있다. 이게 누구 기준인지 생각해 보자" },
           { t: "섹션 목록을 훑는다", d: "Restaurants · Markets · Transportation · Utilities · Sports And Leisure · Childcare · Clothing And Shoes · Rent Per Month · Buy Apartment Price · Salaries And Financing" },
           { t: "‘데이터’ 탭의 발견 미션 두 질문을 생각하며 본다", d: "답을 미리 열지 말고, 먼저 사이트를 보면서 스스로 찾아보자" },
@@ -458,9 +458,9 @@ const CONTENT = {
         title: "물가 데이터 수집 — 3개국",
         dur: "1시간 30분",
         why: "발표 7장이 ‘직접 모았다’는 증거다. 계획만 발표한 팀과 여기서 갈린다.",
-        numbeo: true,
+        guide: "collect",
         steps: [
-          { t: "통화가 현지 통화인지 먼저 확인한다", d: "이걸 틀리면 나머지가 전부 헛수고가 된다. 아래 ‘Numbeo 사용법’의 ⚠️ 항목을 꼭 읽자" },
+          { t: "통화가 현지 통화인지 먼저 확인한다", d: "이걸 틀리면 나머지가 전부 헛수고가 된다. 바로 아래 빨간 상자를 꼭 읽자" },
           { t: "7개 항목을 3개국에서 옮겨 적는다", d: "어느 항목을 어디서 찾는지는 아래 매칭표에 있다" },
           { t: "조회 날짜 · 출처 URL · 통화를 함께 적는다", d: "숫자만 적으면 나중에 “이거 어디서 났어?”에 답할 수 없다" },
           { t: "CSV로 저장한다", d: "70_TVI_APP/71_DATA/raw/numbeo_prices.csv — 템플릿 파일이 이미 있다" },
@@ -540,40 +540,69 @@ const CONTENT = {
       },
     ],
 
-    // ─────────── Numbeo 사용법 (STEP 2·4 공통) ───────────
+    // ─────────── Numbeo 안내 (STEP 2·4 본문에 직접 들어감) ───────────
     numbeo: {
-      title: "Numbeo 사용법",
-      intro:
-        "처음 들어가는 사이트라 어디를 봐야 할지 막막할 수 있다. 아래만 알면 된다. numbeo.com은 세계 여러 나라의 물가를 모아둔 사이트이고, 각 나라 사람들이 직접 입력한 값에 기관 자료를 더해서 만든다.",
+      links: [
+        { name: "스페인", cur: "EUR €", url: "https://www.numbeo.com/cost-of-living/country_result.jsp?country=Spain" },
+        { name: "일본", cur: "JPY ¥", url: "https://www.numbeo.com/cost-of-living/country_result.jsp?country=Japan" },
+        { name: "미국", cur: "USD $", url: "https://www.numbeo.com/cost-of-living/country_result.jsp?country=United+States" },
+        { name: "영국", cur: "GBP £", url: "https://www.numbeo.com/cost-of-living/country_result.jsp?country=United+Kingdom" },
+        { name: "중국", cur: "CNY ¥", url: "https://www.numbeo.com/cost-of-living/country_result.jsp?country=China" },
+      ],
+      linksNote:
+        "누르면 새 탭에서 열린다. 직접 찾아가려면 numbeo.com 상단 메뉴에서 Cost of Living을 누르고 나라를 고르면 된다. 도시 페이지가 아니라 나라 페이지를 쓴다 — 도시별로 보면 입력한 사람이 적어 값이 들쭉날쭉하지만, 나라 단위는 표본이 많아 더 안정적이기 때문이다. 이 판단도 발표에서 말할 거리가 된다.",
 
-      go: {
-        title: "① 어디로 들어가나",
-        body:
-          "아래 링크를 누르면 나라별 물가 페이지로 바로 간다. 직접 찾아가려면 numbeo.com 상단 메뉴에서 Cost of Living을 누르고 나라를 고르면 된다.",
-        links: [
-          { name: "스페인", url: "https://www.numbeo.com/cost-of-living/country_result.jsp?country=Spain" },
-          { name: "일본", url: "https://www.numbeo.com/cost-of-living/country_result.jsp?country=Japan" },
-          { name: "미국", url: "https://www.numbeo.com/cost-of-living/country_result.jsp?country=United+States" },
-          { name: "영국", url: "https://www.numbeo.com/cost-of-living/country_result.jsp?country=United+Kingdom" },
-          { name: "중국", url: "https://www.numbeo.com/cost-of-living/country_result.jsp?country=China" },
+      // STEP 2 — 관찰
+      observe: {
+        title: "Numbeo 둘러보기",
+        intro:
+          "numbeo.com은 세계 여러 나라의 물가를 모아둔 사이트다. 각 나라 사람들이 자기 동네의 밥값·교통비·집세를 직접 입력하고, 거기에 기관 자료를 더해서 만든다. 오늘은 값을 옮겨 적지 말고 ‘이 사이트가 무엇을 주고 무엇을 안 주는지’만 보자.",
+        sectionsTitle: "페이지에는 이런 묶음들이 있다",
+        sections: [
+          "Restaurants (식당)",
+          "Markets (마트)",
+          "Transportation (교통)",
+          "Utilities (공과금, 월)",
+          "Sports And Leisure (운동·여가)",
+          "Childcare (보육)",
+          "Clothing And Shoes (옷·신발)",
+          "Rent Per Month (월세)",
+          "Buy Apartment Price (집값)",
+          "Salaries And Financing (급여·금융)",
         ],
-        note:
-          "도시 페이지가 아니라 나라 페이지를 쓴다. 도시별로 보면 입력한 사람이 적어 값이 들쭉날쭉하지만, 나라 단위는 표본이 많아 더 안정적이기 때문이다. 이 판단도 발표에서 말할 거리가 된다.",
+        lookTitle: "이 세 곳을 눈여겨보자",
+        look: [
+          {
+            t: "맨 위 요약 문장",
+            d: "“a family of four…”(4인 가족)와 “a single person…”(1인)의 한 달 생활비를 알려준다. 이 요약은 누구를 기준으로 만든 값일까? 여행자인 나에게 그대로 맞을까?",
+          },
+          {
+            t: "각 값 옆의 범위",
+            d: "평균값 옆에 최소~최대 범위가 함께 나온다. 범위가 유난히 넓은 항목은 입력한 사람마다 답이 크게 갈렸다는 뜻이다.",
+          },
+          {
+            t: "페이지 아래쪽 입력 통계",
+            d: "“이 나라는 지난 12개월 동안 몇 건이 몇 명에 의해 입력되었다”는 문장과 마지막 갱신 날짜가 있다. 나라마다 이 숫자가 꽤 다르니 세 나라를 비교해 적어두자. 나중에 “Numbeo를 믿을 수 있나요?”라는 질문에 근거를 들고 답할 수 있다.",
+          },
+        ],
+        ask: "그리고 이걸 생각하며 보자 — 여행자가 하루에 쓰는 돈을 계산하려면 어떤 항목이 필요할까? 그게 이 사이트에 다 있나?",
       },
 
-      warn: {
-        title: "② ⚠️ 통화부터 확인한다 — 이걸 틀리면 전부 헛수고",
-        body:
-          "페이지 위쪽에 통화를 고르는 칸이 있다. 여기가 원화(KRW)로 되어 있으면 안 된다. 반드시 그 나라 돈(스페인 EUR, 일본 JPY, 미국 USD, 영국 GBP, 중국 CNY)으로 놓고 적어야 한다.",
-          why:
-          "원화로 표시된 값은 이미 환율이 곱해진 숫자다. 그걸 적어두고 나중에 TVI 식에서 환율을 또 곱하면 환율이 두 번 들어가서 결과가 완전히 틀어진다. 스페인 페이지를 처음 열었을 때 요약 문장에 원화가 먼저 보일 수도 있으니, 표에 적힌 단위가 무엇인지 눈으로 확인하고 시작하자.",
-      },
+      // STEP 4 — 수집
+      collect: {
+        title: "옮겨 적기 전에 — Numbeo 사용법",
+        warnTitle: "⚠️ 통화부터 확인한다 — 이걸 틀리면 전부 헛수고",
+        warnBody:
+          "페이지 위쪽에 통화를 고르는 칸이 있다. 여기가 원화(KRW)로 되어 있으면 안 된다. 반드시 그 나라 돈으로 놓고 적어야 한다. 보통은 그 나라 통화가 기본으로 잡혀 있지만, 요약 문장에 원화가 함께 보이기도 하니 표에 적힌 단위를 눈으로 확인하고 시작하자.",
+        warnWhy:
+          "원화로 표시된 값은 이미 환율이 곱해진 숫자다. 그걸 적어두고 나중에 TVI 식에서 환율을 또 곱하면 환율이 두 번 들어가 결과가 완전히 틀어진다.",
+        yenWarn:
+          "한 가지 더 — 일본 엔과 중국 위안은 기호가 똑같이 ¥다. 화면만 보고 적으면 나중에 어느 나라 값인지 헷갈린다. CSV의 통화 칸에는 기호가 아니라 JPY, CNY처럼 세 글자 코드로 적자.",
 
-      map: {
-        title: "③ 어떤 항목을 어디서 찾나",
-        body:
-          "우리가 모을 7개 항목이 페이지의 어느 섹션에 있는지 정리했다. 사이트는 영어라 이름을 그대로 적어둔다.",
-        rows: [
+        mapTitle: "어떤 항목을 어디서 찾나",
+        mapBody:
+          "우리가 모을 7개 항목이 어느 묶음에 있는지 정리했다. 사이트가 영어라 이름을 그대로 적어둔다. 다섯 나라 모두 항목 이름이 똑같으니 한 나라에서 익히면 나머지는 그대로 하면 된다.",
+        mapRows: [
           ["저렴한 식당 한 끼", "Restaurants", "Meal at an Inexpensive Restaurant"],
           ["일반 식당 2인 식사", "Restaurants", "Meal for Two at a Mid-Range Restaurant (Three Courses, Without Drinks)"],
           ["생수", "Restaurants", "Bottled Water (0.33 Liter)"],
@@ -583,22 +612,11 @@ const CONTENT = {
           ["도심 원룸 월세", "Rent Per Month", "1 Bedroom Apartment in City Centre"],
         ],
         gotcha:
-          "우리 계획서에는 ‘생수 500ml’라고 적혀 있는데 사이트에는 0.33리터짜리밖에 없다. 이런 일은 자료를 실제로 열어보면 자주 생긴다. 없는 값을 500ml로 환산해서 지어내지 말고, 0.33리터를 그대로 쓰기로 정한 다음 그 사실을 CSV의 메모 칸과 04_DECISIONS.md에 적어두면 된다. 다섯 나라에 같은 기준을 쓰는 한 비교에는 문제가 없다.",
-      },
+          "우리 계획서에는 ‘생수 500ml’라고 적혀 있는데 사이트에는 0.33리터짜리밖에 없다. 자료를 실제로 열어보면 이런 일이 자주 생긴다. 없는 값을 500ml로 환산해서 지어내지 말고, 0.33리터를 그대로 쓰기로 정한 다음 그 사실을 CSV 메모 칸과 04_DECISIONS.md에 적어두면 된다. 다섯 나라에 같은 기준을 쓰는 한 비교에는 문제가 없다.",
 
-      trust: {
-        title: "④ 이 숫자를 믿을 수 있나 — 페이지에서 확인할 것",
-        items: [
-          "각 나라 페이지 아래쪽에 “이 나라는 지난 12개월 동안 몇 건이 몇 명에 의해 입력되었다”는 문장과 마지막 갱신 날짜가 있다. 이 숫자를 적어두면 “Numbeo 데이터를 믿을 수 있나요?”라는 질문에 근거를 들고 답할 수 있다.",
-          "항목마다 평균값 옆에 최소~최대 범위가 함께 나온다. 범위가 아주 넓은 항목은 사람마다 답이 크게 갈렸다는 뜻이다.",
-          "페이지 맨 위 요약 문장은 ‘4인 가족’과 ‘1인’의 월 생활비를 알려준다. 우리가 이 요약을 그대로 쓰지 않고 항목을 직접 고르는 이유가 여기에 있다.",
-        ],
-      },
-
-      record: {
-        title: "⑤ 적을 때 함께 남길 세 가지",
-        items: ["조회한 날짜", "그 페이지의 주소(URL)", "통화 단위"],
-        note:
+        recordTitle: "값 옆에 반드시 함께 적을 세 가지",
+        record: ["조회한 날짜", "그 페이지의 주소(URL)", "통화 코드 (EUR · JPY · USD · GBP · CNY)"],
+        recordNote:
           "물가는 계속 바뀐다. 나중에 값이 달라져 있어도 언제 본 값인지 적혀 있으면 설명할 수 있다. CSV 템플릿에 이미 칸이 만들어져 있으니 빈칸을 채우기만 하면 된다.",
       },
     },

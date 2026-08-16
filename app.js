@@ -46,7 +46,11 @@
 
   function route() {
     let tab = (location.hash || "#home").slice(1);
-    if (!TABS.includes(tab)) tab = "home";
+    if (!TABS.includes(tab)) {
+      // 탭 이름이 아닌 해시(페이지 안 앵커 등)면 보고 있던 탭을 그대로 둔다
+      if (TABS.some((t) => !$("#view-" + t).hidden)) return;
+      tab = "home";
+    }
     TABS.forEach((t) => {
       $("#view-" + t).hidden = t !== tab;
     });
@@ -238,43 +242,65 @@
       ...t.minimum.checks.map((c) => c.id),
     ];
 
-    const numbeoCard = `
-      <article class="card numbeo-card">
-        <h3>${nb.title}</h3>
-        <p class="definition">${nb.intro}</p>
+    // 나라별 물가 페이지로 바로 가는 링크. STEP 2와 STEP 4 양쪽에 붙인다.
+    const nbLinks = `
+      <div class="nb-links">
+        ${nb.links
+          .map(
+            (l) =>
+              `<a class="nb-link" href="${l.url}" target="_blank" rel="noopener noreferrer">${l.name}<span class="nb-cur">${l.cur}</span></a>`
+          )
+          .join("")}
+      </div>
+      <p class="nb-note">${nb.linksNote}</p>`;
 
-        <p class="nb-h">${nb.go.title}</p>
-        <p class="definition">${nb.go.body}</p>
-        <div class="nb-links">
-          ${nb.go.links
-            .map((l) => `<a class="nb-link" href="${l.url}" target="_blank" rel="noopener noreferrer">${l.name}</a>`)
-            .join("")}
-        </div>
-        <p class="nb-note">${nb.go.note}</p>
+    const ob = nb.observe;
+    const guideObserve = `
+      <div class="nb-guide">
+        <p class="nb-guide-h">${ob.title}</p>
+        <p class="definition">${ob.intro}</p>
+        ${nbLinks}
+
+        <p class="nb-h">${ob.sectionsTitle}</p>
+        <div class="nb-chips">${ob.sections.map((s) => `<span class="nb-chip">${s}</span>`).join("")}</div>
+
+        <p class="nb-h">${ob.lookTitle}</p>
+        <ul class="points">
+          ${ob.look.map((l) => `<li><strong>${l.t}</strong> — ${l.d}</li>`).join("")}
+        </ul>
+
+        <p class="nb-ask">${ob.ask}</p>
+      </div>`;
+
+    const co = nb.collect;
+    const guideCollect = `
+      <div class="nb-guide">
+        <p class="nb-guide-h">${co.title}</p>
+        ${nbLinks}
 
         <div class="nb-warn">
-          <p class="nb-warn-h">${nb.warn.title}</p>
-          <p>${nb.warn.body}</p>
-          <p class="nb-warn-why">${nb.warn.why}</p>
+          <p class="nb-warn-h">${co.warnTitle}</p>
+          <p>${co.warnBody}</p>
+          <p class="nb-warn-why">${co.warnWhy}</p>
+          <p class="nb-warn-why">${co.yenWarn}</p>
         </div>
 
-        <p class="nb-h">${nb.map.title}</p>
-        <p class="definition">${nb.map.body}</p>
+        <p class="nb-h">${co.mapTitle}</p>
+        <p class="definition">${co.mapBody}</p>
         <div class="tbl-wrap"><table class="tbl">
-          <thead><tr><th>우리 항목</th><th>섹션</th><th>사이트 표기</th></tr></thead>
-          <tbody>${nb.map.rows
+          <thead><tr><th>우리 항목</th><th>묶음</th><th>사이트 표기</th></tr></thead>
+          <tbody>${co.mapRows
             .map((r) => `<tr><td><strong>${r[0]}</strong></td><td>${r[1]}</td><td class="nb-en">${r[2]}</td></tr>`)
             .join("")}</tbody>
         </table></div>
-        <p class="nb-gotcha">${nb.map.gotcha}</p>
+        <p class="nb-gotcha">${co.gotcha}</p>
 
-        <p class="nb-h">${nb.trust.title}</p>
-        <ul class="points">${nb.trust.items.map((i) => `<li>${i}</li>`).join("")}</ul>
+        <p class="nb-h">${co.recordTitle}</p>
+        <ul class="points">${co.record.map((i) => `<li>${i}</li>`).join("")}</ul>
+        <p class="nb-note">${co.recordNote}</p>
+      </div>`;
 
-        <p class="nb-h">${nb.record.title}</p>
-        <ul class="points">${nb.record.items.map((i) => `<li>${i}</li>`).join("")}</ul>
-        <p class="nb-note">${nb.record.note}</p>
-      </article>`;
+    const guides = { observe: guideObserve, collect: guideCollect };
 
     // 아직 다 끝내지 않은 첫 STEP을 "지금 여기"로 표시한다. 날짜가 밀려도 항상 맞는다.
     const blockDone = (b) => b.checks.every((c) => localStorage.getItem("tvi_check_" + c.id) === "1");
@@ -302,7 +328,7 @@
               .join("")}
           </ol>
 
-          ${b.numbeo ? '<p class="tb-seealso">아래 <a href="#nb">Numbeo 사용법</a> 카드를 함께 보자.</p>' : ""}
+          ${b.guide ? guides[b.guide] : ""}
           ${b.extra ? `<p class="tb-extra">${b.extra}</p>` : ""}
           ${b.done ? `<p class="tb-done"><span>끝난 신호</span>${b.done}</p>` : ""}
 
@@ -351,9 +377,6 @@
       </article>
 
       ${blocks}
-
-      <div id="nb"></div>
-      ${numbeoCard}
 
       <article class="card">
         <h3>${t.skip.title}</h3>
@@ -638,6 +661,15 @@
       ${sectionHead("Discovery Mission", d.mission.title)}
       <article class="card">
         <p class="definition">${d.mission.intro}</p>
+        <div class="nb-links">
+          ${CONTENT.todo.numbeo.links
+            .map(
+              (l) =>
+                `<a class="nb-link" href="${l.url}" target="_blank" rel="noopener noreferrer">${l.name}<span class="nb-cur">${l.cur}</span></a>`
+            )
+            .join("")}
+        </div>
+        <p class="nb-note">사용법은 <a href="#todo">할일 탭</a>의 STEP 2·4 안에 있다.</p>
         <ul class="points">${d.mission.guideQuestions.map((q) => `<li>${q}</li>`).join("")}</ul>
         <p class="spoiler-warning" style="margin-top:12px">${d.mission.spoilerWarning}</p>
         ${d.mission.spoilers
