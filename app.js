@@ -577,18 +577,7 @@
 
       ${slides}
 
-      ${sectionHead("Weekday Plan", "평일 준비 일정", "하루 30분. 끝낸 것은 체크하면 저장된다.")}
-      <article class="card">
-        <ul class="check-list" id="weekPlan">
-          ${p.weekPlan
-            .map(
-              (w) => `<li><label><input type="checkbox" data-check="${w.id}"><span class="c-date">${w.date}</span><span class="c-task">${w.task}</span></label></li>`
-            )
-            .join("")}
-        </ul>
-      </article>
-
-      ${sectionHead("Rehearsal", "리허설 — 8/23, 세 번")}
+      ${sectionHead("Rehearsal", "리허설 — 세 번")}
       <article class="card">
         <ul class="points">
           ${p.rehearsal.map((r) => `<li><strong>${r.round}</strong> — ${r.goal}</li>`).join("")}
@@ -598,15 +587,6 @@
         <div class="slide-tip">${p.aiAnswerHint}</div>
       </article>
     `;
-
-    // 체크리스트 저장/복원
-    document.querySelectorAll('#view-pt input[data-check]').forEach((box) => {
-      const key = "tvi_check_" + box.dataset.check;
-      box.checked = localStorage.getItem(key) === "1";
-      box.addEventListener("change", () => {
-        localStorage.setItem(key, box.checked ? "1" : "0");
-      });
-    });
   }
 
   // ───────────── 컴퓨터 / 경제 ─────────────
