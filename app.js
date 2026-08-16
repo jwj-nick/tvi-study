@@ -211,6 +211,13 @@
   }
 
   // ───────────── 할 일: 시간 순서 ─────────────
+  function ddayText(iso) {
+    const n = daysUntil(iso);
+    if (n > 0) return "D-" + n;
+    if (n === 0) return "D-DAY";
+    return "끝남";
+  }
+
   function bindChecks(root, onChange) {
     root.querySelectorAll("input[data-check]").forEach((box) => {
       const k = "tvi_check_" + box.dataset.check;
@@ -269,15 +276,22 @@
         <p class="nb-note">${nb.record.note}</p>
       </article>`;
 
+    // 아직 다 끝내지 않은 첫 STEP을 "지금 여기"로 표시한다. 날짜가 밀려도 항상 맞는다.
+    const blockDone = (b) => b.checks.every((c) => localStorage.getItem("tvi_check_" + c.id) === "1");
+    const currentIdx = t.blocks.findIndex((b) => !blockDone(b));
+
     const blocks = t.blocks
-      .map((b) => {
-        const isNow = daysUntil(b.from) <= 0 && daysUntil(b.to) >= 0;
-        const isPast = daysUntil(b.to) < 0;
-        return `<article class="card todo-block ${isNow ? "now" : ""} ${isPast ? "past" : ""}" id="tb-${b.id}">
+      .map((b, i) => {
+        const isNow = i === currentIdx;
+        const isDone = blockDone(b);
+        return `<article class="card todo-block ${isNow ? "now" : ""} ${isDone ? "past" : ""} ${
+          b.deadline ? "deadline" : ""
+        }" id="tb-${b.id}">
           <div class="tb-head">
-            <span class="tb-date">${b.date}</span>
+            <span class="tb-date">${b.step}</span>
             ${b.dur ? `<span class="tb-dur">${b.dur}</span>` : ""}
-            ${isNow ? '<span class="now-chip">오늘</span>' : ""}
+            ${isNow ? '<span class="now-chip">지금 여기</span>' : ""}
+            ${isDone ? '<span class="done-chip">완료</span>' : ""}
           </div>
           <h3>${b.title}</h3>
           ${b.why ? `<p class="tb-why">${b.why}</p>` : ""}
@@ -310,6 +324,13 @@
     const view = $("#view-todo");
     view.innerHTML = `
       ${sectionHead("To Do", "발표까지 할 일", t.lead)}
+
+      <div class="deadline-box">
+        <p class="dl-label">${t.deadline.label}</p>
+        <p class="dl-date">${t.deadline.dateText}</p>
+        <p class="dl-dday">${ddayText(t.deadline.date)}</p>
+        <p class="dl-note">${t.deadline.note}</p>
+      </div>
 
       <article class="card">
         <div class="ov-grid">
@@ -353,17 +374,18 @@
       </article>
     `;
 
-    function updateProgress() {
-      const done = allChecks.filter((id) => localStorage.getItem("tvi_check_" + id) === "1").length;
-      const pct = Math.round((done / allChecks.length) * 100);
-      const bar = $("#tdBar");
-      if (bar) bar.style.width = pct + "%";
-      const txt = $("#tdText");
-      if (txt) txt.textContent = `${allChecks.length}개 중 ${done}개 완료`;
-    }
+    const done = allChecks.filter((id) => localStorage.getItem("tvi_check_" + id) === "1").length;
+    const bar = $("#tdBar");
+    if (bar) bar.style.width = Math.round((done / allChecks.length) * 100) + "%";
+    const txt = $("#tdText");
+    if (txt) txt.textContent = `${allChecks.length}개 중 ${done}개 완료`;
 
-    bindChecks(view, updateProgress);
-    updateProgress();
+    // 체크가 바뀌면 "지금 여기" 위치도 달라지므로 다시 그린다. 스크롤 위치는 유지.
+    bindChecks(view, () => {
+      const y = typeof window.scrollY === "number" ? window.scrollY : 0;
+      renderTodo();
+      window.scrollTo(0, y);
+    });
   }
 
   // ───────────── 설계: 질문으로 정리하기 ─────────────
