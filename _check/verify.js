@@ -1,0 +1,129 @@
+// content.js가 app.js의 렌더 함수가 기대하는 모양인지 검증한다.
+const fs = require("fs");
+const dir = "C:/Kids/71_High_Projects/2608_TVI_app/";
+const CONTENT = eval(fs.readFileSync(dir + "content.js", "utf8") + "\nCONTENT");
+const QUESTIONS = eval(fs.readFileSync(dir + "questions.js", "utf8") + "\nQUESTIONS");
+
+let fail = 0;
+const check = (cond, msg) => { if (!cond) { console.log("  FAIL: " + msg); fail++; } };
+
+// 설계 블록
+check(CONTENT.design && Array.isArray(CONTENT.design.blocks), "design.blocks 없음");
+CONTENT.design.blocks.forEach((b, i) => {
+  ["id", "n", "title", "why", "core", "placeholder", "weak", "strong", "hint"].forEach((k) =>
+    check(typeof b[k] === "string" && b[k].length, `design.blocks[${i}].${k}`)
+  );
+  check(Array.isArray(b.warmup) && b.warmup.length >= 1, `design.blocks[${i}].warmup`);
+});
+
+// 예시 슬라이드
+const e = CONTENT.example;
+check(e && Array.isArray(e.slides) && e.slides.length === 8, "example.slides 8장이 아님");
+e.slides.forEach((s, i) => {
+  ["title", "script", "teacher", "short"].forEach((k) =>
+    check(typeof s[k] === "string" && s[k].length, `example.slides[${i}].${k}`)
+  );
+  check(typeof s.n === "number" && typeof s.sec === "number", `example.slides[${i}].n/sec`);
+  check(Array.isArray(s.screen) && s.screen.length, `example.slides[${i}].screen`);
+  if (s.keyLine) check(typeof s.keyNote === "string", `slides[${i}] keyLine에 keyNote 없음`);
+  if (s.blanks) s.blanks.forEach((b, j) =>
+    check(b.id && b.label && b.hint, `slides[${i}].blanks[${j}]`)
+  );
+});
+check(e.qna && Array.isArray(e.qna.items) && e.qna.items.length, "example.qna.items");
+e.qna.items.forEach((q, i) => check(q.q && q.a, `qna.items[${i}]`));
+check(Array.isArray(e.checklist) && e.checklist.length, "example.checklist");
+["lead", "warn", "titleLine", "subtitleLine", "timeNote"].forEach((k) =>
+  check(typeof e[k] === "string" && e[k].length, `example.${k}`)
+);
+
+// 데이터 탭 — known 추가분 + 스포일러
+check(CONTENT.data.mission.known && CONTENT.data.mission.known.title && CONTENT.data.mission.known.body, "data.mission.known");
+check(Array.isArray(CONTENT.data.mission.spoilers) && CONTENT.data.mission.spoilers.length === 1, "spoilers는 1개여야 함(숙박비만)");
+
+// localStorage 키 충돌
+const fieldIds = [
+  ...CONTENT.design.blocks.map((b) => b.id),
+  ...e.slides.flatMap((s) => (s.blanks || []).map((b) => b.id)),
+];
+check(new Set(fieldIds).size === fieldIds.length, "field id 중복: " + fieldIds.join(","));
+
+const checkIds = [
+  ...e.checklist.map((c) => c.id),
+  ...CONTENT.todo.blocks.flatMap((b) => b.checks.map((c) => c.id)),
+  ...CONTENT.todo.minimum.checks.map((c) => c.id),
+];
+check(new Set(checkIds).size === checkIds.length, "check id 중복: " + checkIds.join(","));
+console.log(`  체크박스 id 총 ${checkIds.length}개, 중복 없음`);
+
+// 할 일 블록 구조
+CONTENT.todo.blocks.forEach((b, i) => {
+  ["id", "step", "title"].forEach((k) =>
+    check(typeof b[k] === "string" && b[k].length, `todo.blocks[${i}].${k}`)
+  );
+  check(Array.isArray(b.steps) && b.steps.length, `todo.blocks[${i}].steps`);
+  check(Array.isArray(b.checks) && b.checks.length, `todo.blocks[${i}].checks`);
+  check(!("from" in b) && !("to" in b) && !("date" in b), `todo.blocks[${i}] 날짜 필드가 남아 있음`);
+});
+// STEP 라벨: 앞 6개는 STEP n, 마지막만 날짜(데드라인)
+CONTENT.todo.blocks.slice(0, 6).forEach((b, i) =>
+  check(b.step === `STEP ${i + 1}`, `blocks[${i}].step이 "STEP ${i + 1}"이 아님: ${b.step}`)
+);
+const last = CONTENT.todo.blocks[CONTENT.todo.blocks.length - 1];
+check(last.deadline === true, "마지막 블록에 deadline 표시 없음");
+check(CONTENT.todo.deadline.date === "2026-08-26", "deadline 날짜");
+
+// 본문에 날짜/요일이 남아 있지 않은지 (데드라인 블록과 deadline 객체는 제외)
+const bodyText = JSON.stringify(
+  CONTENT.todo.blocks.slice(0, 6).concat([CONTENT.todo.overview, CONTENT.todo.lead, CONTENT.todo.overviewNote])
+);
+const dateLike = bodyText.match(/8\/\d\d|8월 \d\d일|\((월|화|수|목|금|토|일)\)/g);
+check(!dateLike, "STEP 본문에 날짜/요일이 남음: " + (dateLike || []).join(", "));
+// Numbeo 안내
+const nb = CONTENT.todo.numbeo;
+check(nb.links.length === 5, "numbeo 링크 5개");
+nb.links.forEach((l) => {
+  check(/^https:\/\/www\.numbeo\.com\/cost-of-living\/country_result\.jsp\?country=/.test(l.url), "numbeo URL 형식: " + l.name);
+  check(/^(EUR|JPY|USD|GBP|CNY) /.test(l.cur), "numbeo 통화 코드: " + l.name);
+});
+check(nb.collect.mapRows.length === 7, "numbeo 항목 매칭 7개");
+check(nb.observe.sections.length === 10, "numbeo 섹션 목록 10개");
+check(nb.observe.look.length === 3, "numbeo 관찰 포인트 3개");
+// STEP 2·4가 각각 가이드를 달고 있는지
+const guided = CONTENT.todo.blocks.filter((b) => b.guide).map((b) => b.step + ":" + b.guide);
+check(guided.join(",") === "STEP 2:observe,STEP 4:collect", "가이드 배치: " + guided.join(", "));
+// 페이지 내 앵커(#nb 같은)가 남아 있지 않은지 — 해시 라우터와 충돌한다
+const anchors = JSON.stringify(CONTENT).match(/href=\\"#[a-z-]+/g) || [];
+const badAnchors = anchors.filter((a) => {
+  const t = a.split("#")[1];
+  return !["home", "todo", "design", "example", "pt", "computer", "economy", "data", "quiz"].includes(t);
+});
+check(!badAnchors.length, "콘텐츠에 탭이 아닌 앵커가 있음: " + badAnchors.join(", "));
+
+// 퀴즈 세트 필터가 모두 동작하는지
+CONTENT.quizSets.forEach((s) => {
+  const n = QUESTIONS.filter(s.filter).length;
+  check(n > 0, `quizSet ${s.id} 결과 0건`);
+  console.log(`  quizSet ${s.id}: ${n}문항`);
+});
+
+// 발표 시간 합계
+const total = e.slides.reduce((a, s) => a + s.sec, 0);
+console.log(`  예시 발표 목표 시간 합계: ${total}초 (${(total / 60).toFixed(1)}분)`);
+
+// 대본 분량 → 실제 소요 추정 (한국어 약 5.5자/초)
+e.slides.forEach((s) => {
+  const chars = (s.script || "").length + (s.script2 || "").length;
+  const est = Math.round(chars / 5.5);
+  const flag = est > s.sec * 1.15 ? "  ← 목표 초과" : "";
+  console.log(`   ${s.n}장 ${s.title}: 대본 ${chars}자 ≈ ${est}초 / 목표 ${s.sec}초${flag}`);
+});
+const estTotal = e.slides.reduce((a, s) => a + ((s.script || "").length + (s.script2 || "").length) / 5.5, 0);
+console.log(`  대본 기준 추정 총 소요: ${Math.round(estTotal)}초 (${(estTotal / 60).toFixed(1)}분)`);
+
+// 데드라인(8/26)을 뺀 나머지 콘텐츠 전체에 날짜/요일이 남아 있지 않은지
+const whole = JSON.stringify(CONTENT).replace(/8월 26일 \(수\)|2026-08-26|8\/26 \(수\)/g, "");
+const leftover = whole.match(/8\/\d\d|8월 \d\d일|\((월|화|수|목|금|토|일)\)/g);
+check(!leftover, "콘텐츠에 날짜/요일이 남음: " + [...new Set(leftover || [])].join(", "));
+
+console.log(fail === 0 ? "\nALL CHECKS PASSED" : `\n${fail} CHECK(S) FAILED`);
