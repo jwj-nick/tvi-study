@@ -1406,3 +1406,132 @@ html[data-theme="dark"] .btn-primary:hover { background: var(--teal); opacity: 0
 @media (min-width: 560px) {
   .quiz-sets { grid-template-columns: 1fr 1fr 1fr; }
 }
+
+/* ─────────────── 3분 발표본 ─────────────── */
+
+.three-hero {
+  background: var(--teal-deep);
+  color: #F1F5F0;
+  border-radius: 14px;
+  padding: 20px 18px 18px;
+}
+.th-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #8FC7B6;
+}
+.th-big {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 3.2rem;
+  line-height: 1.05;
+  margin: 2px 0 14px;
+}
+.th-big span { font-size: 1.3rem; margin-left: 4px; }
+
+/* 5장을 초에 비례한 막대로 — 3분이 얼마나 짧은지 눈으로 */
+.tl-bar {
+  display: flex;
+  gap: 3px;
+  height: 46px;
+}
+.tl-seg {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.14);
+  border-radius: 5px;
+}
+.tl-seg.key { background: rgba(143, 199, 182, 0.42); }
+.tl-seg b {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  line-height: 1.1;
+}
+.tl-seg i {
+  font-family: var(--font-mono);
+  font-style: normal;
+  font-size: 0.6rem;
+  color: #C6DCD3;
+}
+.th-sum {
+  margin-top: 10px;
+  font-size: 0.82rem;
+  color: #B8D2C8;
+}
+
+.kl-label {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--teal);
+  margin-bottom: 7px;
+}
+
+.ex-slide.star { border-left: 3px solid var(--red); }
+
+.prep-list {
+  list-style: none;
+  counter-reset: prep;
+}
+.prep-list li {
+  counter-increment: prep;
+  padding: 12px 0 12px 34px;
+  position: relative;
+  border-bottom: 1px dashed var(--line);
+}
+.prep-list li:last-child { border-bottom: none; }
+.prep-list li::before {
+  content: counter(prep);
+  position: absolute;
+  left: 0;
+  top: 13px;
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--teal);
+  color: var(--paper);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.prep-t {
+  font-weight: 700;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+}
+.prep-dur {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--teal);
+  background: var(--teal-soft);
+  border-radius: 4px;
+  padding: 1px 6px;
+}
+.prep-d {
+  margin-top: 4px;
+  font-size: 0.89rem;
+  line-height: 1.7;
+  color: var(--muted);
+}
+.prep-note {
+  margin-top: 12px;
+  font-size: 0.85rem;
+  line-height: 1.7;
+  color: var(--muted);
+  border-top: 1px solid var(--line);
+  padding-top: 11px;
+}

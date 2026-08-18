@@ -56,7 +56,7 @@ try {
 }
 
 let fail = 0;
-const expect = ["view-home", "view-todo", "view-design", "view-example", "view-pt", "view-computer", "view-economy", "view-data", "view-quiz"];
+const expect = ["view-home", "view-todo", "view-three", "view-design", "view-example", "view-pt", "view-computer", "view-economy", "view-data", "view-quiz"];
 expect.forEach((v) => {
   const html = views[v];
   if (!html || html.length < 200) {
@@ -79,7 +79,7 @@ const checks = [
   [d.includes("내 발표 설계하기"), "설계: 제목"],
   [(d.match(/data-field=/g) || []).length === 5, "설계: 저장 입력란 5개"],
   [(d.match(/class="warmup"/g) || []).length === 5, "설계: warmup 블록 5개"],
-  [d.includes('href="#example"'), "설계: 예시 탭 링크"],
+  [d.includes('href="#three"'), "설계: 3분 탭 링크"],
   [(x.match(/class="card ex-slide/g) || []).length === 8, "예시: 슬라이드 8장"],
   [(x.match(/class="blank"/g) || []).length === 5, "예시: 점선 칸 5개"],
   [(x.match(/et-tag/g) || []).length === 8, "예시: 평가 관점 8개"],
@@ -103,7 +103,7 @@ const tdChecks = [
   [td.includes("Meal at an Inexpensive Restaurant"), "할일: 항목 매칭표"],
   [td.includes("Bottled Water (0.33 Liter)"), "할일: 생수 0.33L 표기"],
   [td.includes("progress-bar"), "할일: 진행률 바"],
-  [(td.match(/data-check=/g) || []).length === 28, "할일: 체크박스 28개 (블록 23 + 최소선 5)"],
+  [(td.match(/data-check=/g) || []).length === 29, "할일: 체크박스 29개 (블록 24 + 최소선 5)"],
   [/now-chip/.test(td) && td.includes("지금 여기"), "할일: 진도 기반 현재 STEP 강조"],
   [(td.match(/STEP \d/g) || []).length >= 6, "할일: STEP 라벨"],
   [td.includes("deadline-box") && td.includes("8월 26일 (수)"), "할일: 데드라인 박스"],
@@ -111,6 +111,34 @@ const tdChecks = [
   [!/\d+원\s*\(|€\d|¥\d|\$\d/.test(td), "할일: 실제 가격 수치 없음"],
 ];
 tdChecks.forEach((c) => checks.push(c));
+
+// 3분 발표본 탭
+const t3 = views["view-three"] || "";
+[
+  [(t3.match(/class="card ex-slide/g) || []).length === 5, "3분: 슬라이드 5장"],
+  [(t3.match(/class="tl-seg/g) || []).length === 5, "3분: 시간 막대 5칸"],
+  [(t3.match(/class="tl-seg key/g) || []).length === 3, "3분: ★장 3개가 막대에 강조됨"],
+  [t3.includes("말하는 시간 2분 35초"), "3분: 총 시간 표시"],
+  [t3.includes("남는 25초"), "3분: 여유 시간 계산"],
+  [(t3.match(/et-tag/g) || []).length === 5, "3분: ‘이 장이 왜 있나’ 5개"],
+  [(t3.match(/class="prep-list"/g) || []).length === 1 && (t3.match(/class="prep-t"/g) || []).length === 3, "3분: 이번 주 할 일 3가지"],
+  [(t3.match(/class="card qna"/g) || []).length === 5, "3분: 예상 질문 5개"],
+  [(t3.match(/data-check=/g) || []).length === 6, "3분: 체크박스 6개"],
+  [t3.includes('href="#example"'), "3분: 긴 버전 링크"],
+  [!/\d+\s*(유로|달러|엔|위안|파운드)|€\s*\d|¥\s*\d|\$\s*\d/.test(t3), "3분: 지어낸 가격 수치 없음"],
+  [t3.includes("?일"), "3분: 결과 자리를 물음표로 비워둠"],
+  [!/8\/1\d|8\/2[0-5]|\(토\)|\(일\)|\(월\)|\(금\)/.test(t3), "3분: 8/26 외 날짜 없음"],
+].forEach((c) => checks.push(c));
+
+// 다른 탭들이 3분 체계와 어긋나지 않는지
+[
+  [!/슬라이드 8장/.test(td), "할일: ‘슬라이드 8장’ 잔재 없음"],
+  [td.includes("슬라이드 5장"), "할일: STEP 6이 5장 기준"],
+  [td.includes('href="#three"'), "할일: 3분 탭 링크"],
+  [(views["view-home"] || "").includes('href="#three"'), "홈: 3분 탭 링크"],
+  [(views["view-pt"] || "").includes('href="#three"'), "발표: 3분 탭 안내"],
+  [x.includes("3분"), "예시: 실제 발표가 3분임을 밝힘"],
+].forEach((c) => checks.push(c));
 checks.forEach(([ok, name]) => {
   if (!ok) { console.log("  FAIL: " + name); fail++; } else console.log("  ok: " + name);
 });

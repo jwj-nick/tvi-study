@@ -50,6 +50,7 @@ check(new Set(fieldIds).size === fieldIds.length, "field id 중복: " + fieldIds
 
 const checkIds = [
   ...e.checklist.map((c) => c.id),
+  ...CONTENT.three.check.items.map((c) => c.id),
   ...CONTENT.todo.blocks.flatMap((b) => b.checks.map((c) => c.id)),
   ...CONTENT.todo.minimum.checks.map((c) => c.id),
 ];
@@ -96,7 +97,7 @@ check(guided.join(",") === "STEP 2:observe,STEP 4:collect", "가이드 배치: "
 const anchors = JSON.stringify(CONTENT).match(/href=\\"#[a-z-]+/g) || [];
 const badAnchors = anchors.filter((a) => {
   const t = a.split("#")[1];
-  return !["home", "todo", "design", "example", "pt", "computer", "economy", "data", "quiz"].includes(t);
+  return !["home", "todo", "three", "design", "example", "pt", "computer", "economy", "data", "quiz"].includes(t);
 });
 check(!badAnchors.length, "콘텐츠에 탭이 아닌 앵커가 있음: " + badAnchors.join(", "));
 
@@ -122,8 +123,49 @@ const estTotal = e.slides.reduce((a, s) => a + ((s.script || "").length + (s.scr
 console.log(`  대본 기준 추정 총 소요: ${Math.round(estTotal)}초 (${(estTotal / 60).toFixed(1)}분)`);
 
 // 데드라인(8/26)을 뺀 나머지 콘텐츠 전체에 날짜/요일이 남아 있지 않은지
-const whole = JSON.stringify(CONTENT).replace(/8월 26일 \(수\)|2026-08-26|8\/26 \(수\)/g, "");
+// — 중간발표 날짜만 못박고, 나머지는 STEP 체계로 표기한다
+const whole = JSON.stringify(CONTENT).replace(/8월 26일 \(수\)|2026-08-26|8\/26 \(수\)|8\/26/g, "");
 const leftover = whole.match(/8\/\d\d|8월 \d\d일|\((월|화|수|목|금|토|일)\)/g);
 check(!leftover, "콘텐츠에 날짜/요일이 남음: " + [...new Set(leftover || [])].join(", "));
+
+// ─────────── 3분 발표본 ───────────
+const t3 = CONTENT.three;
+check(t3 && Array.isArray(t3.slides), "three.slides 없음");
+check(t3.slides.length <= 5, `3분에 슬라이드 ${t3.slides.length}장은 너무 많다 (최대 5장)`);
+["lead", "timeNote"].forEach((k) => check(typeof t3[k] === "string" && t3[k].length, `three.${k}`));
+["confirm", "onePoint", "rule", "dropped", "prep", "make", "qna", "check"].forEach((k) =>
+  check(t3[k] && typeof t3[k] === "object", `three.${k}`)
+);
+t3.slides.forEach((s, i) => {
+  ["title", "script", "why"].forEach((k) =>
+    check(typeof s[k] === "string" && s[k].length, `three.slides[${i}].${k}`)
+  );
+  check(typeof s.n === "number" && typeof s.sec === "number", `three.slides[${i}].n/sec`);
+  check(Array.isArray(s.screen) && s.screen.length, `three.slides[${i}].screen`);
+  if (s.keyLine) check(typeof s.keyNote === "string", `three.slides[${i}] keyLine에 keyNote 없음`);
+  // 3분판에는 채워 넣는 칸을 두지 않는다 — 그대로 발표할 수 있어야 한다
+  check(!s.blanks, `three.slides[${i}]에 blanks가 있으면 안 됨`);
+});
+t3.qna.items.forEach((q, i) => check(q.q && q.a, `three.qna.items[${i}]`));
+t3.prep.items.forEach((p, i) => check(p.t && p.d && p.dur, `three.prep.items[${i}]`));
+
+const t3total = t3.slides.reduce((a, s) => a + s.sec, 0);
+check(t3total <= 170, `3분판 목표 시간 합계 ${t3total}초 — 넘기고 숨 쉴 여유가 없다 (170초 이하)`);
+console.log(`\n  3분판 목표 시간 합계: ${t3total}초 (${Math.floor(t3total / 60)}분 ${t3total % 60}초) / 180초`);
+t3.slides.forEach((s) => {
+  const chars = (s.script || "").length;
+  const est = Math.round(chars / 5.5);
+  const flag = est > s.sec * 1.15 ? "  ← 목표 초과" : "";
+  console.log(`   ${s.n}장 ${s.title}: 대본 ${chars}자 ≈ ${est}초 / 목표 ${s.sec}초${flag}`);
+  check(est <= s.sec * 1.15, `three ${s.n}장 대본이 목표 시간보다 김 (${est}초 > ${s.sec}초)`);
+});
+const t3est = t3.slides.reduce((a, s) => a + (s.script || "").length / 5.5, 0);
+console.log(`  대본 기준 추정 총 소요: ${Math.round(t3est)}초`);
+check(t3est <= 180, `3분판 대본 추정 소요 ${Math.round(t3est)}초 — 3분을 넘는다`);
+
+// 3분판은 결과가 없는 단계다. 실제 가격처럼 보이는 수치가 들어가면 안 된다
+const t3text = JSON.stringify(t3);
+const priceLike = t3text.match(/\d+(\.\d+)?\s?(유로|달러|엔|위안|파운드|€|\$|£)/g);
+check(!priceLike, "3분판에 가격처럼 보이는 수치가 있음: " + (priceLike || []).join(", "));
 
 console.log(fail === 0 ? "\nALL CHECKS PASSED" : `\n${fail} CHECK(S) FAILED`);

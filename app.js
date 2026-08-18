@@ -42,7 +42,7 @@
   }
 
   // ───────────── 라우터 ─────────────
-  const TABS = ["home", "todo", "design", "example", "pt", "computer", "economy", "data", "quiz"];
+  const TABS = ["home", "todo", "three", "design", "example", "pt", "computer", "economy", "data", "quiz"];
 
   function route() {
     let tab = (location.hash || "#home").slice(1);
@@ -162,7 +162,10 @@
         <ul class="week-list">
           ${h.thisWeek.map((w) => `<li><span class="w-date">${w.date}</span><span>${w.task}</span></li>`).join("")}
         </ul>
-        <div class="tb-links" style="margin-top:12px"><a href="#todo">할 일을 순서대로 자세히 보기 →</a></div>
+        <div class="tb-links" style="margin-top:12px">
+          <a href="#todo">할 일을 순서대로 자세히 보기 →</a>
+          <a href="#three">발표는 3분 — 원고 5장 보기 →</a>
+        </div>
       </article>
     `;
 
@@ -446,13 +449,158 @@
       <article class="card">
         <h3>다 적었으면</h3>
         <ul class="points">
-          <li>‘예시’ 탭을 열어 완성본 수준의 발표안과 비교해 보자. 다르다고 틀린 게 아니다 — 어디가 왜 다른지가 중요하다.</li>
-          <li>여기 적은 답은 그대로 발표 3장(목적)과 4장(연구 질문)의 원고가 된다.</li>
+          <li>‘3분’ 탭을 열어 실제 발표본과 비교해 보자. 다르다고 틀린 게 아니다 — 어디가 왜 다른지가 중요하다.</li>
+          <li>여기 적은 답은 그대로 3분 발표 2장(무엇을 만드나)과 4장(왜 하나)의 원고가 된다.</li>
+          <li>질문이 깊게 들어올 때를 대비하려면 ‘예시’ 탭의 긴 버전까지 읽어두자.</li>
         </ul>
-        <a class="btn-primary" href="#example">예시 발표 보러 가기</a>
+        <a class="btn-primary" href="#three">3분 발표본 보러 가기</a>
       </article>
     `;
     bindFields(view);
+  }
+
+  // ───────────── 3분 발표본 ─────────────
+  function renderThree() {
+    const t = CONTENT.three;
+    const total = t.slides.reduce((a, s) => a + s.sec, 0);
+    const mm = Math.floor(total / 60);
+    const ss = total % 60;
+
+    // 5장을 초에 비례한 막대로 — 3분이 얼마나 짧은지 눈으로 보이게
+    const bar = t.slides
+      .map(
+        (s) => `<span class="tl-seg${s.star ? " key" : ""}" style="flex:${s.sec}">
+          <b>${s.n}</b><i>${s.sec}초</i>
+        </span>`
+      )
+      .join("");
+
+    const slides = t.slides
+      .map((s) => {
+        const screen = `<div class="slide-screen">${s.screen
+          .map((line) => (line === "" ? '<p class="sc-gap"></p>' : `<p>${line}</p>`))
+          .join("")}</div>`;
+
+        const key = s.keyLine
+          ? `<div class="ex-key"><p class="line">${s.keyLine}</p><p class="note">${s.keyNote}</p></div>`
+          : "";
+
+        return `<article class="card ex-slide ${s.star ? "star" : ""}">
+          <div class="slide-head">
+            <span class="slide-no">${s.n}장${s.star ? " ★" : ""}</span>
+            <span class="slide-title">${s.title}</span>
+            <span class="slide-time">${s.sec}초</span>
+          </div>
+
+          <p class="ex-label">화면에 넣을 것</p>
+          ${screen}
+
+          <p class="ex-label">말할 것</p>
+          <blockquote class="ex-script">${s.script}</blockquote>
+
+          ${key}
+          <div class="ex-teacher"><span class="et-tag">이 장이 왜 있나</span>${s.why}</div>
+          ${s.tip ? `<p class="ex-short"><span>한 가지 더</span>${s.tip}</p>` : ""}
+        </article>`;
+      })
+      .join("");
+
+    const view = $("#view-three");
+    view.innerHTML = `
+      ${sectionHead("3-Minute Version", "3분 발표본 — 8/26 중간발표", t.lead)}
+
+      <div class="three-hero">
+        <p class="th-eyebrow">주어진 시간</p>
+        <p class="th-big">3<span>분</span></p>
+        <div class="tl-bar">${bar}</div>
+        <p class="th-sum">말하는 시간 ${mm}분 ${ss}초 · 슬라이드 ${t.slides.length}장 · 남는 ${180 - total}초는 넘기고 숨 쉬는 시간</p>
+      </div>
+
+      <article class="card"><p class="definition">${t.timeNote}</p></article>
+
+      ${sectionHead("This Week", t.prep.title, t.prep.intro)}
+      <article class="card">
+        <ol class="prep-list">
+          ${t.prep.items
+            .map(
+              (p) => `<li>
+                <p class="prep-t">${p.t}<span class="prep-dur">${p.dur}</span></p>
+                <p class="prep-d">${p.d}</p>
+              </li>`
+            )
+            .join("")}
+        </ol>
+        <p class="prep-note">${t.prep.note}</p>
+      </article>
+
+      <div class="key-line">
+        <p class="kl-label">${t.onePoint.label}</p>
+        <p class="line">${t.onePoint.line}</p>
+        <p class="note">${t.onePoint.why}</p>
+      </div>
+
+      <article class="card">
+        <h3>${t.rule.title}</h3>
+        <ul class="points">
+          ${t.rule.items.map((r) => `<li><b>${r.t}</b> — ${r.d}</li>`).join("")}
+        </ul>
+      </article>
+
+      ${sectionHead("Slides", "슬라이드 5장", "‘화면에 넣을 것’을 그대로 옮기고, 이름과 캡처만 네 것으로 바꾸면 된다. ★는 이 발표의 중심이라 어떤 경우에도 빼지 않는 장이다.")}
+      ${slides}
+
+      <article class="card">
+        <h3>${t.make.title}</h3>
+        <ul class="points">
+          ${t.make.items.map((m) => `<li><b>${m.t}</b> — ${m.d}</li>`).join("")}
+        </ul>
+      </article>
+
+      ${sectionHead("Held in Reserve", t.dropped.title, t.dropped.intro)}
+      <article class="card">
+        <ul class="points">
+          ${t.dropped.items.map((d) => `<li><b>${d.t}</b> — ${d.d}</li>`).join("")}
+        </ul>
+        <p class="prep-note">${t.dropped.note}</p>
+        <a class="btn-primary" href="#example">긴 버전(8장) 보러 가기</a>
+      </article>
+
+      ${sectionHead("Q&A", "예상 질문과 답", t.qna.intro)}
+      ${t.qna.items
+        .map(
+          (q) => `<article class="card qna">
+            <p class="qna-q">${q.q}</p>
+            <p class="qna-a">${q.a}</p>
+            ${q.note ? `<p class="qna-note">${q.note}</p>` : ""}
+          </article>`
+        )
+        .join("")}
+      <article class="card"><p class="definition">${t.qna.more}</p></article>
+
+      <div class="warnbox">
+        <b>${t.confirm.title}</b>
+        <ul class="points" style="margin-top:8px">
+          ${t.confirm.items.map((c) => `<li><b>${c.t}</b> — ${c.d}</li>`).join("")}
+        </ul>
+      </div>
+
+      ${sectionHead("Before You Present", t.check.title)}
+      <article class="card">
+        <ul class="check-list">
+          ${t.check.items
+            .map(
+              (c) => `<li><label><input type="checkbox" data-check="${c.id}"><span class="c-task">${c.text}</span></label></li>`
+            )
+            .join("")}
+        </ul>
+      </article>
+    `;
+
+    view.querySelectorAll("input[data-check]").forEach((box) => {
+      const k = "tvi_check_" + box.dataset.check;
+      box.checked = localStorage.getItem(k) === "1";
+      box.addEventListener("change", () => localStorage.setItem(k, box.checked ? "1" : "0"));
+    });
   }
 
   // ───────────── 예시: 완성본 수준 발표안 ─────────────
@@ -581,11 +729,11 @@
       .join("");
 
     $("#view-pt").innerHTML = `
-      ${sectionHead("Midterm · 8/26", "중간발표 지도", "슬라이드는 8장. ★ 표시(5·6·7장)가 이 발표의 차별점이다 — 시간이 부족해 장수를 줄여도 5·6장은 절대 빼지 않는다.")}
+      ${sectionHead("Midterm · 8/26", "중간발표 지도", "발표에 무엇이 왜 들어가는지를 8장짜리 긴 버전으로 풀어놓은 지도다. ★ 표시(5·6·7장)가 이 발표의 차별점이다.")}
 
       <article class="card known">
         <h3>이 탭은 참조용이다</h3>
-        <p class="definition">여기는 각 장에 무엇이 들어가고 왜 그런지를 설명하는 지도다. 실제로 발표를 준비할 때는 <a href="#design">설계</a> 탭에서 네 답을 먼저 적고, <a href="#example">예시</a> 탭에서 완성본 수준의 발표안과 대본을 보는 순서가 빠르다.</p>
+        <p class="definition">8/26 발표 시간은 3분이라 실제로 쓸 원고는 <a href="#three">3분</a> 탭에 있다. 여기는 각 장에 무엇이 들어가고 왜 그런지를 설명하는 지도고, 10월 최종발표와 질문 대비에 쓴다. 준비 순서는 <a href="#design">설계</a> 탭에서 내 답을 먼저 적고 → <a href="#three">3분</a> 탭으로 슬라이드를 만들고 → 여기와 <a href="#example">예시</a> 탭으로 질문에 대비하는 것이 빠르다.</p>
       </article>
 
       <article class="card">
@@ -837,6 +985,7 @@
   initDday();
   renderHome();
   renderTodo();
+  renderThree();
   renderDesign();
   renderExample();
   renderPresentation();
