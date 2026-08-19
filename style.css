@@ -93,6 +93,18 @@ a { color: var(--teal); }
   font-family: var(--font-display);
   font-weight: 700;
   font-size: 1.02rem;
+  white-space: nowrap;
+}
+
+/* 한글 이름이 길어 좁은 화면에서는 D-day 칩과 부딪힌다 — 같이 줄인다 */
+@media (max-width: 430px) {
+  .topbar-inner { gap: 6px; }
+  .brand { gap: 6px; }
+  .brand-mark { font-size: 0.8rem; padding: 2px 5px; }
+  .brand-name { font-size: 0.85rem; }
+}
+@media (max-width: 360px) {
+  .brand-name { font-size: 0.78rem; }
 }
 
 .topbar-right { display: flex; align-items: center; gap: 8px; }

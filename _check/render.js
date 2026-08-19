@@ -77,6 +77,7 @@ const d = views["view-design"] || "";
 const x = views["view-example"] || "";
 const checks = [
   [d.includes("내 발표 설계하기"), "설계: 제목"],
+  [x.includes("여행 실질 가치 지수(TVI)"), "예시: 한글 제목 적용"],
   [(d.match(/data-field=/g) || []).length === 5, "설계: 저장 입력란 5개"],
   [(d.match(/class="warmup"/g) || []).length === 5, "설계: warmup 블록 5개"],
   [d.includes('href="#three"'), "설계: 3분 탭 링크"],
@@ -122,8 +123,8 @@ const t3 = views["view-three"] || "";
   [(t3.match(/class="part-divider"/g) || []).length === 2, "3분: 슬라이드 목록의 부분 구분선 2개"],
   [t3.includes("주제선정 동기 및 탐구의 목적") && t3.includes("탐구 과정 및 탐구 내용"), "3분: 학교 항목명 그대로 표기"],
   [(t3.match(/class="tlg tlg-/g) || []).length === 2, "3분: 시간 막대 범례 2개"],
-  [t3.includes("말하는 시간 2분 44초"), "3분: 총 시간 표시"],
-  [t3.includes("남는 16초"), "3분: 여유 시간 계산"],
+  [t3.includes("말하는 시간 2분 45초"), "3분: 총 시간 표시"],
+  [t3.includes("남는 15초"), "3분: 여유 시간 계산"],
   [(t3.match(/이 장이 왜 있나/g) || []).length === 5, "3분: ‘이 장이 왜 있나’ 5개"],
   [(t3.match(/선생님이 보는 것/g) || []).length === 2, "3분: 항목별 평가 관점 2개"],
   [(t3.match(/class="prep-list"/g) || []).length === 1 && (t3.match(/class="prep-t"/g) || []).length === 3, "3분: 이번 주 할 일 3가지"],
@@ -133,6 +134,8 @@ const t3 = views["view-three"] || "";
   // 물가/환율 수치는 슬라이드에 절대 없어야 한다. Q&A의 "260달러"는 Numbeo API 요금(출처 확인됨)이라 예외.
   [!/\d+\s*(유로|엔|위안|파운드)|€\s*\d|¥\s*\d|\$\s*\d/.test(t3) && !/\d+\s*달러/.test(t3.replace(/260달러/g, "")), "3분: 지어낸 가격 수치 없음"],
   [t3.includes("?일"), "3분: 결과 자리를 물음표로 비워둠"],
+  [t3.includes("여행 실질 가치 지수(TVI)"), "3분: 표지가 한글 제목 + 괄호 TVI"],
+  [!/>Travel Value Index</.test(t3), "3분: 표지에 영어 제목만 남아 있지 않음"],
   [!/8\/1\d|8\/2[0-5]|\(토\)|\(일\)|\(월\)|\(금\)/.test(t3), "3분: 8/26 외 날짜 없음"],
 ].forEach((c) => checks.push(c));
 
