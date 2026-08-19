@@ -469,11 +469,15 @@
     // 5장을 초에 비례한 막대로 — 3분이 얼마나 짧은지 눈으로 보이게
     const bar = t.slides
       .map(
-        (s) => `<span class="tl-seg${s.star ? " key" : ""}" style="flex:${s.sec}">
+        (s) => `<span class="tl-seg p${s.part}" style="flex:${s.sec}">
           <b>${s.n}</b><i>${s.sec}초</i>
         </span>`
       )
       .join("");
+
+    // 평가 항목 두 가지가 각각 어디서 시작하는지 슬라이드 사이에 표시한다
+    const partOf = (no) => t.structure.parts.find((p) => p.no === String(no));
+    let shownPart = 0;
 
     const slides = t.slides
       .map((s) => {
@@ -485,7 +489,18 @@
           ? `<div class="ex-key"><p class="line">${s.keyLine}</p><p class="note">${s.keyNote}</p></div>`
           : "";
 
-        return `<article class="card ex-slide ${s.star ? "star" : ""}">
+        let divider = "";
+        if (s.part !== shownPart) {
+          shownPart = s.part;
+          const p = partOf(s.part);
+          divider = `<div class="part-divider">
+            <span class="pd-no">${p.no}</span>
+            <span class="pd-name">${p.name}</span>
+            <span class="pd-meta">${p.slides} · ${p.sec}초</span>
+          </div>`;
+        }
+
+        return `${divider}<article class="card ex-slide ${s.star ? "star" : ""}">
           <div class="slide-head">
             <span class="slide-no">${s.n}장${s.star ? " ★" : ""}</span>
             <span class="slide-title">${s.title}</span>
@@ -513,10 +528,40 @@
         <p class="th-eyebrow">주어진 시간</p>
         <p class="th-big">3<span>분</span></p>
         <div class="tl-bar">${bar}</div>
+        <p class="th-legend">
+          ${t.structure.parts
+            .map((p) => `<span class="tlg tlg-${p.no}"><b>${p.no}</b> ${p.name} <i>${p.slides}</i></span>`)
+            .join("")}
+        </p>
         <p class="th-sum">말하는 시간 ${mm}분 ${ss}초 · 슬라이드 ${t.slides.length}장 · 남는 ${180 - total}초는 넘기고 숨 쉬는 시간</p>
       </div>
 
       <article class="card"><p class="definition">${t.timeNote}</p></article>
+
+      ${sectionHead("Two Required Parts", t.structure.title, t.structure.intro)}
+      ${t.structure.parts
+        .map(
+          (p) => `<article class="card part-card part-${p.no}">
+            <div class="pc-head">
+              <span class="pc-no">${p.no}</span>
+              <div>
+                <h3>${p.name}</h3>
+                <p class="pc-meta">${p.slides} · ${p.sec}초</p>
+              </div>
+            </div>
+            <p class="ex-label">이 부분이 답해야 하는 질문</p>
+            <ul class="pc-asks">${p.asks.map((a) => `<li>${a}</li>`).join("")}</ul>
+            <p class="ex-label">우리 발표에서는 여기</p>
+            <ul class="points">${p.ours.map((o) => `<li>${o}</li>`).join("")}</ul>
+            <div class="ex-teacher"><span class="et-tag">선생님이 보는 것</span>${p.teacher}</div>
+            <p class="ex-short"><span>흔한 실수</span>${p.trap}</p>
+          </article>`
+        )
+        .join("")}
+      <article class="card">
+        <p class="definition">${t.structure.balance}</p>
+        <p class="definition" style="margin-top:10px">${t.structure.advice}</p>
+      </article>
 
       ${sectionHead("This Week", t.prep.title, t.prep.intro)}
       <article class="card">
@@ -546,7 +591,7 @@
         </ul>
       </article>
 
-      ${sectionHead("Slides", "슬라이드 5장", "‘화면에 넣을 것’을 그대로 옮기고, 이름과 캡처만 네 것으로 바꾸면 된다. ★는 이 발표의 중심이라 어떤 경우에도 빼지 않는 장이다.")}
+      ${sectionHead("Slides", "슬라이드 5장", "‘화면에 넣을 것’을 그대로 옮기고, 이름과 캡처만 네 것으로 바꾸면 된다. ★ 세 장은 화면을 안 보고도 말할 수 있어야 하는 장이다 — 나머지 둘은 화면을 보며 말해도 괜찮다.")}
       ${slides}
 
       <article class="card">

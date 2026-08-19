@@ -1448,7 +1448,8 @@ html[data-theme="dark"] .btn-primary:hover { background: var(--teal); opacity: 0
   background: rgba(255, 255, 255, 0.14);
   border-radius: 5px;
 }
-.tl-seg.key { background: rgba(143, 199, 182, 0.42); }
+.tl-seg.p1 { background: rgba(255, 255, 255, 0.15); }
+.tl-seg.p2 { background: rgba(143, 199, 182, 0.40); }
 .tl-seg b {
   font-family: var(--font-display);
   font-size: 1rem;
@@ -1460,10 +1461,118 @@ html[data-theme="dark"] .btn-primary:hover { background: var(--teal); opacity: 0
   font-size: 0.6rem;
   color: #C6DCD3;
 }
+.th-legend {
+  margin-top: 11px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  font-size: 0.76rem;
+  line-height: 1.5;
+  color: #D3E5DD;
+}
+.th-legend .tlg { display: flex; align-items: baseline; gap: 5px; }
+.th-legend .tlg b {
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  width: 15px;
+  height: 15px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 3px;
+  flex: none;
+}
+.th-legend .tlg-1 b { background: rgba(255, 255, 255, 0.22); color: #F1F5F0; }
+.th-legend .tlg-2 b { background: rgba(143, 199, 182, 0.55); color: #08302A; }
+.th-legend .tlg i {
+  font-family: var(--font-mono);
+  font-style: normal;
+  font-size: 0.68rem;
+  color: #8FC7B6;
+}
 .th-sum {
-  margin-top: 10px;
+  margin-top: 11px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
   font-size: 0.82rem;
   color: #B8D2C8;
+}
+
+/* 평가 항목 두 가지 */
+.part-card { border-left: 3px solid var(--line); }
+.part-card.part-1 { border-left-color: var(--muted); }
+.part-card.part-2 { border-left-color: var(--teal); }
+.pc-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  margin-bottom: 13px;
+}
+.pc-no {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 7px;
+  background: var(--text);
+  color: var(--paper);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1rem;
+}
+.part-card.part-2 .pc-no { background: var(--teal); }
+.pc-head h3 { margin: 0; }
+.pc-meta {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--muted);
+  margin-top: 2px;
+}
+.pc-asks { list-style: none; margin-bottom: 4px; }
+.pc-asks li {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1rem;
+  line-height: 1.6;
+  padding-left: 16px;
+  position: relative;
+}
+.pc-asks li::before {
+  content: "?";
+  position: absolute;
+  left: 0;
+  color: var(--teal);
+  font-family: var(--font-mono);
+}
+
+/* 슬라이드 목록 안에서 두 부분을 갈라주는 줄 */
+.part-divider {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  flex-wrap: wrap;
+  padding: 6px 0 2px;
+  border-bottom: 2px solid var(--teal);
+}
+.pd-no {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 0.74rem;
+  color: var(--paper);
+  background: var(--teal);
+  border-radius: 4px;
+  padding: 1px 7px;
+}
+.pd-name {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.98rem;
+}
+.pd-meta {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--muted);
+  margin-left: auto;
 }
 
 .kl-label {

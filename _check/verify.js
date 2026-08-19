@@ -133,8 +133,32 @@ const t3 = CONTENT.three;
 check(t3 && Array.isArray(t3.slides), "three.slides 없음");
 check(t3.slides.length <= 5, `3분에 슬라이드 ${t3.slides.length}장은 너무 많다 (최대 5장)`);
 ["lead", "timeNote"].forEach((k) => check(typeof t3[k] === "string" && t3[k].length, `three.${k}`));
-["confirm", "onePoint", "rule", "dropped", "prep", "make", "qna", "check"].forEach((k) =>
+["confirm", "onePoint", "rule", "dropped", "prep", "make", "qna", "check", "structure"].forEach((k) =>
   check(t3[k] && typeof t3[k] === "object", `three.${k}`)
+);
+// 학교가 정한 두 부분 구성이 실제로 채워져 있는지
+const st = t3.structure;
+check(st.parts.length === 2, "three.structure.parts는 2개(평가 항목 두 가지)");
+check(st.parts[0].name === "주제선정 동기 및 탐구의 목적", "①의 이름이 학교 항목명과 다름: " + st.parts[0].name);
+check(st.parts[1].name === "탐구 과정 및 탐구 내용", "②의 이름이 학교 항목명과 다름: " + st.parts[1].name);
+st.parts.forEach((p, i) => {
+  ["no", "name", "slides", "teacher", "trap"].forEach((k) =>
+    check(typeof p[k] === "string" && p[k].length, `structure.parts[${i}].${k}`)
+  );
+  check(Array.isArray(p.asks) && p.asks.length, `structure.parts[${i}].asks`);
+  check(Array.isArray(p.ours) && p.ours.length, `structure.parts[${i}].ours`);
+  const real = t3.slides.filter((s) => String(s.part) === p.no).reduce((a, s) => a + s.sec, 0);
+  check(p.sec === real, `structure.parts[${i}].sec(${p.sec})이 실제 슬라이드 합계(${real})와 다름`);
+});
+// 모든 슬라이드가 두 부분 중 하나에 속하는지 + 부분이 뒤섞이지 않는지
+check(t3.slides.every((s) => s.part === 1 || s.part === 2), "모든 슬라이드에 part(1 또는 2)가 있어야 함");
+const seq = t3.slides.map((s) => s.part).join("");
+check(/^1+2+$/.test(seq), "슬라이드가 ①→② 순서로 이어지지 않음: " + seq);
+// 두 항목 제목이 실제 슬라이드 화면에도 들어가 있는지 (선생님이 손에 든 평가표와 맞추기 위함)
+check(
+  t3.slides.some((s) => s.screen.some((l) => l.includes("주제선정 동기 및 탐구의 목적"))) &&
+    t3.slides.some((s) => s.screen.some((l) => l.includes("탐구 과정 및 탐구 내용"))),
+  "슬라이드 화면에 평가 항목 제목이 없음"
 );
 t3.slides.forEach((s, i) => {
   ["title", "script", "why"].forEach((k) =>
