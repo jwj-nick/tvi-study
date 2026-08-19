@@ -42,7 +42,7 @@
   }
 
   // ───────────── 라우터 ─────────────
-  const TABS = ["home", "todo", "three", "design", "example", "pt", "computer", "economy", "data", "quiz"];
+  const TABS = ["home", "todo", "talk", "design", "next", "computer", "economy", "data", "quiz", "three"];
 
   function route() {
     let tab = (location.hash || "#home").slice(1);
@@ -164,7 +164,8 @@
         </ul>
         <div class="tb-links" style="margin-top:12px">
           <a href="#todo">할 일을 순서대로 자세히 보기 →</a>
-          <a href="#three">발표는 3분 — 원고 5장 보기 →</a>
+          <a href="#talk">발표는 3분 — 원고 5장 보기 →</a>
+          <a href="#next">발표 끝나고 할 일 (9월부터) →</a>
         </div>
       </article>
     `;
@@ -458,10 +459,10 @@
         <h3>다 적었으면</h3>
         <ul class="points">
           <li>‘3분’ 탭을 열어 실제 발표본과 비교해 보자. 다르다고 틀린 게 아니다 — 어디가 왜 다른지가 중요하다.</li>
-          <li>여기 적은 답은 그대로 3분 발표 2장(무엇을 만드나)과 4장(왜 하나)의 원고가 된다.</li>
-          <li>질문이 깊게 들어올 때를 대비하려면 ‘예시’ 탭의 긴 버전까지 읽어두자.</li>
+          <li>여기 적은 답은 그대로 3분 발표 2장(동기와 목적)과 3장(무엇을 만드나)의 원고가 된다.</li>
+          <li>같은 3분을 다른 각도로 짠 것이 ‘다른안’ 탭에 있다. 문장을 골라 섞어 써도 된다.</li>
         </ul>
-        <a class="btn-primary" href="#three">3분 발표본 보러 가기</a>
+        <a class="btn-primary" href="#talk">3분 발표본 보러 가기</a>
       </article>
     `;
     bindFields(view);
@@ -530,7 +531,7 @@
 
     const view = $("#view-three");
     view.innerHTML = `
-      ${sectionHead("3-Minute Version", "3분 발표본 — 8/26 중간발표", t.lead)}
+      ${sectionHead("Alternate Take", "다른안 — 지수를 주인공으로 한 3분판", t.lead)}
 
       <div class="three-hero">
         <p class="th-eyebrow">주어진 시간</p>
@@ -615,7 +616,7 @@
           ${t.dropped.items.map((d) => `<li><b>${d.t}</b> — ${d.d}</li>`).join("")}
         </ul>
         <p class="prep-note">${t.dropped.note}</p>
-        <a class="btn-primary" href="#example">긴 버전(8장) 보러 가기</a>
+        <a class="btn-primary" href="#talk">실제로 쓸 3분 발표본 보기</a>
       </article>
 
       ${sectionHead("Q&A", "예상 질문과 답", t.qna.intro)}
@@ -656,104 +657,118 @@
     });
   }
 
-  // ───────────── 예시: 완성본 수준 발표안 ─────────────
-  function renderExample() {
-    const e = CONTENT.example;
-    const totalSecAll = e.slides.reduce((a, s) => a + s.sec, 0);
-    const totalMin = Math.floor(totalSecAll / 60);
-    const totalSec = totalSecAll % 60;
-
-    const slides = e.slides
+  // ───────────── 3분 발표본 (메인) ─────────────
+  // 데이터 모양이 '다른안'(three)과 거의 같아 화면 조각을 함께 쓴다.
+  function talkSlides(t) {
+    const partOf = (no) => t.structure.parts.find((p) => p.no === String(no));
+    let shown = 0;
+    return t.slides
       .map((s) => {
         const screen = `<div class="slide-screen">${s.screen
           .map((line) => (line === "" ? '<p class="sc-gap"></p>' : `<p>${line}</p>`))
           .join("")}</div>`;
-
         const key = s.keyLine
           ? `<div class="ex-key"><p class="line">${s.keyLine}</p><p class="note">${s.keyNote}</p></div>`
           : "";
-
-        const blanks = s.blanks
-          ? s.blanks
-              .map(
-                (b) => `<div class="blank">
-                  <p class="blank-title">채워야 할 칸 — ${b.label}</p>
-                  <p class="blank-hint">${b.hint}</p>
-                  ${savedField(b.id, "내가 채운 내용", "", 3)}
-                </div>`
-              )
-              .join("")
-          : "";
-
-        return `<article class="card ex-slide ${s.star ? "star" : ""}">
+        let divider = "";
+        if (s.part !== shown) {
+          shown = s.part;
+          const p = partOf(s.part);
+          divider = `<div class="part-divider">
+            <span class="pd-no">${p.no}</span>
+            <span class="pd-name">${p.name}</span>
+            <span class="pd-meta">${p.slides} · ${p.sec}초</span>
+          </div>`;
+        }
+        return `${divider}<article class="card ex-slide ${s.star ? "star" : ""}">
           <div class="slide-head">
             <span class="slide-no">${s.n}장${s.star ? " ★" : ""}</span>
             <span class="slide-title">${s.title}</span>
             <span class="slide-time">${s.sec}초</span>
           </div>
-
           <p class="ex-label">화면에 넣을 것</p>
           ${screen}
-
           <p class="ex-label">말할 것</p>
-          <blockquote class="ex-script">${s.script}${
-            s.script2 ? `<span class="script-break"></span>${s.script2}` : ""
-          }</blockquote>
-
+          <blockquote class="ex-script">${s.script}</blockquote>
           ${key}
-          ${blanks}
-
-          <div class="ex-teacher"><span class="et-tag">선생님이 보는 것</span>${s.teacher}</div>
-          ${s.qHint ? `<div class="ex-qhint">${s.qHint}</div>` : ""}
-          <p class="ex-short"><span>짧게 갈 때</span>${s.short}</p>
+          <div class="ex-teacher"><span class="et-tag">이 장이 왜 있나</span>${s.why}</div>
+          ${s.tip ? `<p class="ex-short"><span>한 가지 더</span>${s.tip}</p>` : ""}
         </article>`;
       })
       .join("");
+  }
 
-    const view = $("#view-example");
-    view.innerHTML = `
-      ${sectionHead("Worked Example", "예시 발표 — 8/26 중간발표", e.lead)}
-
-      <div class="ex-cover">
-        <p class="ex-cover-title">${e.titleLine}</p>
-        <p class="ex-cover-sub">${e.subtitleLine}</p>
-        <p class="ex-cover-time">전체 ${e.slides.length}장 · 목표 ${totalMin}분 ${totalSec}초</p>
-      </div>
-
-      <article class="card">
-        <h3>시간 배분</h3>
-        <p class="definition">${e.timeNote}</p>
-        <p class="definition" style="margin-top:8px">${e.timeAdvice}</p>
-      </article>
-
-      <div class="warnbox">${e.warn}</div>
-
-      ${slides}
-
-      ${sectionHead("Q&A", "예상 질문과 답", e.qna.intro)}
-      ${e.qna.items
+  function structureCards(st) {
+    return (
+      st.parts
         .map(
-          (q) => `<article class="card qna">
-            <p class="qna-q">${q.q}</p>
-            <p class="qna-a">${q.a}</p>
-            ${q.note ? `<p class="qna-note">${q.note}</p>` : ""}
+          (p) => `<article class="card part-card part-${p.no}">
+            <div class="pc-head">
+              <span class="pc-no">${p.no}</span>
+              <div>
+                <h3>${p.name}</h3>
+                <p class="pc-meta">${p.slides} · ${p.sec}초</p>
+              </div>
+            </div>
+            <p class="ex-label">이 부분이 답해야 하는 질문</p>
+            <ul class="pc-asks">${p.asks.map((a) => `<li>${a}</li>`).join("")}</ul>
+            <p class="ex-label">우리 발표에서는 여기</p>
+            <ul class="points">${p.ours.map((o) => `<li>${o}</li>`).join("")}</ul>
+            <div class="ex-teacher"><span class="et-tag">선생님이 보는 것</span>${p.teacher}</div>
+            <p class="ex-short"><span>흔한 실수</span>${p.trap}</p>
           </article>`
         )
-        .join("")}
+        .join("") +
+      `<article class="card">
+        <p class="definition">${st.balance}</p>
+        <p class="definition" style="margin-top:10px">${st.advice}</p>
+      </article>`
+    );
+  }
 
-      ${sectionHead("Before You Present", "발표 전 마지막 점검")}
-      <article class="card">
-        <ul class="check-list">
-          ${e.checklist
-            .map(
-              (c) => `<li><label><input type="checkbox" data-check="${c.id}"><span class="c-task">${c.text}</span></label></li>`
-            )
-            .join("")}
-        </ul>
-      </article>
-    `;
+  function prepCard(p) {
+    return `<article class="card">
+      <ol class="prep-list">
+        ${p.items
+          .map(
+            (i) => `<li>
+              <p class="prep-t">${i.t}<span class="prep-dur">${i.dur}</span></p>
+              <p class="prep-d">${i.d}</p>
+            </li>`
+          )
+          .join("")}
+      </ol>
+      <p class="prep-note">${p.note}</p>
+    </article>`;
+  }
 
-    bindFields(view);
+  function qnaCards(q) {
+    return (
+      q.items
+        .map(
+          (i) => `<article class="card qna">
+            <p class="qna-q">${i.q}</p>
+            <p class="qna-a">${i.a}</p>
+            ${i.note ? `<p class="qna-note">${i.note}</p>` : ""}
+          </article>`
+        )
+        .join("") + `<article class="card"><p class="definition">${q.more}</p></article>`
+    );
+  }
+
+  function checkCard(c) {
+    return `<article class="card">
+      <ul class="check-list">
+        ${c.items
+          .map(
+            (i) => `<li><label><input type="checkbox" data-check="${i.id}"><span class="c-task">${i.text}</span></label></li>`
+          )
+          .join("")}
+      </ul>
+    </article>`;
+  }
+
+  function bindCheckboxes(view) {
     view.querySelectorAll("input[data-check]").forEach((box) => {
       const k = "tvi_check_" + box.dataset.check;
       box.checked = localStorage.getItem(k) === "1";
@@ -761,56 +776,206 @@
     });
   }
 
-  // ───────────── 발표 ─────────────
-  function renderPresentation() {
-    const p = CONTENT.presentation;
+  function renderTalk() {
+    const t = CONTENT.talk;
+    const total = t.slides.reduce((a, s) => a + s.sec, 0);
+    const bar = t.slides
+      .map((s) => `<span class="tl-seg p${s.part}" style="flex:${s.sec}"><b>${s.n}</b><i>${s.sec}초</i></span>`)
+      .join("");
 
-    const slides = p.slides
+    const view = $("#view-talk");
+    view.innerHTML = `
+      ${sectionHead("The Talk", "3분 발표본 — 8/26 중간발표", t.lead)}
+
+      <div class="three-hero">
+        <p class="th-eyebrow">주어진 시간</p>
+        <p class="th-big">3<span>분</span></p>
+        <div class="tl-bar">${bar}</div>
+        <p class="th-legend">
+          ${t.structure.parts
+            .map((p) => `<span class="tlg tlg-${p.no}"><b>${p.no}</b> ${p.name} <i>${p.slides}</i></span>`)
+            .join("")}
+        </p>
+        <p class="th-sum">말하는 시간 ${Math.floor(total / 60)}분 ${total % 60}초 · 슬라이드 ${t.slides.length}장 · 남는 ${
+      180 - total
+    }초는 넘기고 숨 쉬는 시간</p>
+      </div>
+
+      <article class="card">
+        <h3>${t.why.title}</h3>
+        <ul class="points">${t.why.items.map((w) => `<li><b>${w.t}</b> — ${w.d}</li>`).join("")}</ul>
+      </article>
+
+      ${sectionHead("This Week", t.prep.title, t.prep.intro)}
+      ${prepCard(t.prep)}
+
+      ${sectionHead("Two Required Parts", t.structure.title, t.structure.intro)}
+      ${structureCards(t.structure)}
+
+      ${sectionHead("Slides", "슬라이드 5장", "‘화면에 넣을 것’을 그대로 옮기고, 이름과 캡처만 네 것으로 바꾸면 된다. ★ 네 장은 화면을 안 보고도 말할 수 있어야 하는 장이다.")}
+      ${talkSlides(t)}
+
+      <article class="card">
+        <h3>${t.make.title}</h3>
+        <ul class="points">${t.make.items.map((m) => `<li><b>${m.t}</b> — ${m.d}</li>`).join("")}</ul>
+      </article>
+
+      ${sectionHead("Q&A", "예상 질문과 답", t.qna.intro)}
+      ${qnaCards(t.qna)}
+
+      <div class="warnbox">
+        <b>${t.confirm.title}</b>
+        <ul class="points" style="margin-top:8px">
+          ${t.confirm.items.map((c) => `<li><b>${c.t}</b> — ${c.d}</li>`).join("")}
+        </ul>
+      </div>
+
+      ${sectionHead("Before You Present", t.check.title)}
+      ${checkCard(t.check)}
+
+      <article class="card">
+        <h3>발표가 끝나면</h3>
+        <p class="definition">받은 질문을 그날 바로 적어두자. 답을 못 한 질문이 9월에 할 일이 된다. 그다음은 <a href="#next">9월부터</a> 탭으로.</p>
+        <a class="btn-primary" href="#next">9월부터 할 일 보기</a>
+      </article>
+    `;
+    bindCheckboxes(view);
+  }
+
+  // ───────────── 9월부터: 중간발표 이후 ─────────────
+  function renderNext() {
+    const n = CONTENT.next;
+
+    const weeks = n.weeks
       .map(
-        (s) => `<article class="card slide-card ${s.star ? "star" : ""}">
-        <div class="slide-head">
-          <span class="slide-no">${s.n}장${s.star ? " ★" : ""}</span>
-          <span class="slide-title">${s.title}</span>
-          <span class="slide-time">${s.time}</span>
-        </div>
-        <ul class="points">${s.points.map((pt) => `<li>${pt}</li>`).join("")}</ul>
-        ${s.say ? `<div class="slide-say">🗣️ ${s.say}</div>` : ""}
-        ${s.tip ? `<div class="slide-tip">${s.tip}</div>` : ""}
-        ${s.lockedRef ? `<div class="slide-tip">${s.lockedRef}</div>` : ""}
-      </article>`
+        (w) => `<li><span class="nw-n">${w.n}</span><p class="nw-label">${w.label}</p><p class="nw-sub">${w.sub}</p></li>`
       )
       .join("");
 
-    $("#view-pt").innerHTML = `
-      ${sectionHead("Midterm · 8/26", "중간발표 지도", "발표에 무엇이 왜 들어가는지를 8장짜리 긴 버전으로 풀어놓은 지도다. ★ 표시(5·6·7장)가 이 발표의 차별점이다.")}
+    const blocks = n.blocks
+      .map((b) => {
+        const steps = b.steps
+          ? `<ol class="tb-steps">${b.steps.map((s) => `<li><b>${s.t}</b>${s.d ? `<span>${s.d}</span>` : ""}</li>`).join("")}</ol>`
+          : "";
 
-      <article class="card known">
-        <h3>이 탭은 참조용이다</h3>
-        <p class="definition">8/26 발표 시간은 3분이라 실제로 쓸 원고는 <a href="#three">3분</a> 탭에 있다. 여기는 각 장에 무엇이 들어가고 왜 그런지를 설명하는 지도고, 10월 최종발표와 질문 대비에 쓴다. 준비 순서는 <a href="#design">설계</a> 탭에서 내 답을 먼저 적고 → <a href="#three">3분</a> 탭으로 슬라이드를 만들고 → 여기와 <a href="#example">예시</a> 탭으로 질문에 대비하는 것이 빠르다.</p>
-      </article>
+        const table = b.table
+          ? `<p class="nb-h">${b.table.title}</p>
+             <div class="tbl-wrap"><table class="tbl">
+               <thead><tr>${b.table.head.map((h) => `<th>${h}</th>`).join("")}</tr></thead>
+               <tbody>${b.table.rows
+                 .map((r) => `<tr>${r.map((c, i) => (i === 0 ? `<td><strong>${c}</strong></td>` : `<td>${c}</td>`)).join("")}</tr>`)
+                 .join("")}</tbody>
+             </table></div>
+             <p class="nb-note">${b.table.note}</p>`
+          : "";
 
-      <article class="card">
-        <h3>발표 형식</h3>
-        <ul class="points">${p.format.map((f) => `<li>${f}</li>`).join("")}</ul>
-      </article>
+        const cards = b.cards
+          ? b.cards
+              .map(
+                (c) => `<div class="src-card">
+                  <div class="src-head">
+                    <span class="src-name">${c.name}</span>
+                    <span class="src-badge${c.badge.indexOf("손") === 0 ? " hand" : ""}">${c.badge}</span>
+                  </div>
+                  <p class="src-where">${c.where}</p>
+                  <dl class="src-lines">
+                    ${c.lines.map((l) => `<dt>${l[0]}</dt><dd>${l[1]}</dd>`).join("")}
+                  </dl>
+                  ${c.warns ? `<ul class="src-warns">${c.warns.map((w) => `<li>${w}</li>`).join("")}</ul>` : ""}
+                  ${c.good ? `<p class="src-good">${c.good}</p>` : ""}
+                  ${
+                    c.links
+                      ? `<div class="tb-links">${c.links
+                          .map((l) => `<a href="${l.href}" target="_blank" rel="noopener">${l.label} ↗</a>`)
+                          .join("")}</div>`
+                      : ""
+                  }
+                </div>`
+              )
+              .join("")
+          : "";
 
-      <div class="key-line">
-        <p class="line">${p.keyLine}</p>
-        <p class="note">${p.keyLineNote}</p>
+        const pipeline = b.pipeline
+          ? `<p class="nb-h">${b.pipeline.title}</p>
+             <ol class="pipe">${b.pipeline.steps
+               .map((s) => `<li><b>${s.t}</b><span>${s.d}</span></li>`)
+               .join("")}</ol>
+             <p class="nb-note">${b.pipeline.note}</p>`
+          : "";
+
+        const order = b.order
+          ? `<p class="nb-h">${b.order.title}</p>
+             <ul class="points">${b.order.items.map((i) => `<li><b>${i.t}</b> — ${i.d}</li>`).join("")}</ul>`
+          : "";
+
+        const rules = b.rules
+          ? `<p class="nb-h">${b.rules.title}</p>
+             <ul class="points">${b.rules.items.map((i) => `<li><b>${i.t}</b> — ${i.d}</li>`).join("")}</ul>`
+          : "";
+
+        const ai = b.ai
+          ? `<div class="ai-box">
+               <p class="nb-h">${b.ai.title}</p>
+               <p class="definition">${b.ai.body}</p>
+               <ul class="points" style="margin-top:8px">${b.ai.items
+                 .map((i) => `<li><b>${i.t}</b> — ${i.d}</li>`)
+                 .join("")}</ul>
+             </div>`
+          : "";
+
+        return `<article class="card next-block" id="nb-${b.id}">
+          <div class="tb-head">
+            <span class="nx-tag">${b.tag}</span>
+            <h3 class="tb-title">${b.title}</h3>
+            <span class="tb-dur">${b.dur}</span>
+          </div>
+          <p class="tb-why">${b.why}</p>
+          ${steps}
+          ${table}
+          ${cards}
+          ${pipeline}
+          ${order}
+          ${rules}
+          ${ai}
+          ${b.warn ? `<div class="warnbox" style="margin-top:12px">${b.warn}</div>` : ""}
+          ${b.done ? `<p class="tb-done"><span>다 되면</span>${b.done}</p>` : ""}
+          <ul class="check-list">
+            ${b.checks
+              .map(
+                (c) => `<li><label><input type="checkbox" data-check="${c.id}"><span class="c-task">${c.text}</span></label></li>`
+              )
+              .join("")}
+          </ul>
+        </article>`;
+      })
+      .join("");
+
+    const view = $("#view-next");
+    view.innerHTML = `
+      ${sectionHead("After the Midterm", "9월부터 — 진짜 작업", n.lead)}
+
+      <div class="warnbox">
+        <b>${n.gate.title}</b>
+        <p style="margin-top:6px">${n.gate.body}</p>
+        <p style="margin-top:6px">${n.gate.resume}</p>
       </div>
 
-      ${slides}
-
-      ${sectionHead("Rehearsal", "리허설 — 세 번")}
+      ${sectionHead("4 Weeks", "9/13 ~ 10/7 네 주")}
       <article class="card">
-        <ul class="points">
-          ${p.rehearsal.map((r) => `<li><strong>${r.round}</strong> — ${r.goal}</li>`).join("")}
-        </ul>
-        <h3 style="margin-top:14px">마지막 점검 세 가지</h3>
-        <ul class="points">${p.finalChecks.map((c) => `<li>${c}</li>`).join("")}</ul>
-        <div class="slide-tip">${p.aiAnswerHint}</div>
+        <ul class="week-plan">${weeks}</ul>
+        <p class="prep-note">${n.weeksNote}</p>
+      </article>
+
+      ${blocks}
+
+      ${sectionHead("Day One", n.firstDay.title, n.firstDay.intro)}
+      <article class="card">
+        <ol class="tb-steps">
+          ${n.firstDay.items.map((i) => `<li><b>${i.t}</b><span>${i.d}</span></li>`).join("")}
+        </ol>
       </article>
     `;
+    bindCheckboxes(view);
   }
 
   // ───────────── 컴퓨터 / 경제 ─────────────
@@ -1038,10 +1203,10 @@
   initDday();
   renderHome();
   renderTodo();
-  renderThree();
+  renderTalk();
   renderDesign();
-  renderExample();
-  renderPresentation();
+  renderNext();
+  renderThree();
   renderComputer();
   renderEconomy();
   renderData();
