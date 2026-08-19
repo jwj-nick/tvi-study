@@ -187,9 +187,20 @@ const t3est = t3.slides.reduce((a, s) => a + (s.script || "").length / 5.5, 0);
 console.log(`  대본 기준 추정 총 소요: ${Math.round(t3est)}초`);
 check(t3est <= 180, `3분판 대본 추정 소요 ${Math.round(t3est)}초 — 3분을 넘는다`);
 
-// 3분판은 결과가 없는 단계다. 실제 가격처럼 보이는 수치가 들어가면 안 된다
-const t3text = JSON.stringify(t3);
-const priceLike = t3text.match(/\d+(\.\d+)?\s?(유로|달러|엔|위안|파운드|€|\$|£)/g);
-check(!priceLike, "3분판에 가격처럼 보이는 수치가 있음: " + (priceLike || []).join(", "));
+// 3분판은 계산 결과가 없는 단계다. 슬라이드(화면·대본)에 물가/환율처럼 보이는 수치가
+// 들어가면 안 된다. 지어낸 숫자가 발표에 나가는 것이 이 규칙이 막으려는 사고다.
+const slideText = JSON.stringify(t3.slides);
+const priceLike = slideText.match(/\d+(\.\d+)?\s?(유로|달러|엔|위안|파운드|€|\$|£)/g);
+check(!priceLike, "3분판 슬라이드에 가격처럼 보이는 수치가 있음: " + (priceLike || []).join(", "));
+
+// 슬라이드 밖(Q&A·안내문)에서는 출처를 확인한 수치만 허용한다.
+// 허용 목록에 넣을 때는 반드시 어디서 언제 확인했는지 함께 기록할 것.
+const VERIFIED = [
+  "260달러", // Numbeo API 최저 요금제 (numbeo.com/common/api.jsp, 2026-08-19 확인)
+];
+let rest = JSON.stringify(t3).replace(slideText, "");
+VERIFIED.forEach((v) => { rest = rest.split(v).join(""); });
+const restPrice = rest.match(/\d+(\.\d+)?\s?(유로|달러|엔|위안|파운드|€|\$|£)/g);
+check(!restPrice, "3분판에 출처 미확인 수치가 있음: " + (restPrice || []).join(", "));
 
 console.log(fail === 0 ? "\nALL CHECKS PASSED" : `\n${fail} CHECK(S) FAILED`);

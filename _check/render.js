@@ -127,10 +127,11 @@ const t3 = views["view-three"] || "";
   [(t3.match(/이 장이 왜 있나/g) || []).length === 5, "3분: ‘이 장이 왜 있나’ 5개"],
   [(t3.match(/선생님이 보는 것/g) || []).length === 2, "3분: 항목별 평가 관점 2개"],
   [(t3.match(/class="prep-list"/g) || []).length === 1 && (t3.match(/class="prep-t"/g) || []).length === 3, "3분: 이번 주 할 일 3가지"],
-  [(t3.match(/class="card qna"/g) || []).length === 5, "3분: 예상 질문 5개"],
+  [(t3.match(/class="card qna"/g) || []).length === 6, "3분: 예상 질문 6개"],
   [(t3.match(/data-check=/g) || []).length === 7, "3분: 체크박스 7개"],
   [t3.includes('href="#example"'), "3분: 긴 버전 링크"],
-  [!/\d+\s*(유로|달러|엔|위안|파운드)|€\s*\d|¥\s*\d|\$\s*\d/.test(t3), "3분: 지어낸 가격 수치 없음"],
+  // 물가/환율 수치는 슬라이드에 절대 없어야 한다. Q&A의 "260달러"는 Numbeo API 요금(출처 확인됨)이라 예외.
+  [!/\d+\s*(유로|엔|위안|파운드)|€\s*\d|¥\s*\d|\$\s*\d/.test(t3) && !/\d+\s*달러/.test(t3.replace(/260달러/g, "")), "3분: 지어낸 가격 수치 없음"],
   [t3.includes("?일"), "3분: 결과 자리를 물음표로 비워둠"],
   [!/8\/1\d|8\/2[0-5]|\(토\)|\(일\)|\(월\)|\(금\)/.test(t3), "3분: 8/26 외 날짜 없음"],
 ].forEach((c) => checks.push(c));

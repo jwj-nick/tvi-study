@@ -298,6 +298,14 @@
         </table></div>
         <p class="nb-gotcha">${co.gotcha}</p>
 
+        <p class="nb-h">${co.apiTitle}</p>
+        <p class="definition">${co.apiBody}</p>
+        <p class="nb-gotcha">${co.apiRule}</p>
+        <p class="nb-note">${co.apiContrast}</p>
+
+        <p class="nb-h">${co.creditTitle}</p>
+        <p class="definition">${co.creditBody}</p>
+
         <p class="nb-h">${co.recordTitle}</p>
         <ul class="points">${co.record.map((i) => `<li>${i}</li>`).join("")}</ul>
         <p class="nb-note">${co.recordNote}</p>
