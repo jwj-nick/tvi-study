@@ -30,6 +30,7 @@ const checkIds = [
   ...CONTENT.next.blocks.flatMap((b) => b.checks.map((c) => c.id)),
   ...CONTENT.todo.blocks.flatMap((b) => b.checks.map((c) => c.id)),
   ...CONTENT.todo.minimum.checks.map((c) => c.id),
+  ...CONTENT.go.blocks.flatMap((b) => b.checks.map((c) => c.id)),
 ];
 check(new Set(checkIds).size === checkIds.length, "check id 중복: " + checkIds.join(","));
 console.log(`  체크박스 id 총 ${checkIds.length}개, 중복 없음`);
@@ -74,7 +75,7 @@ check(guided.join(",") === "STEP 2:observe,STEP 4:collect", "가이드 배치: "
 const anchors = JSON.stringify(CONTENT).match(/href=\\"#[a-z-]+/g) || [];
 const badAnchors = anchors.filter((a) => {
   const t = a.split("#")[1];
-  return !["home", "todo", "talk", "design", "next", "computer", "economy", "data", "quiz", "three"].includes(t);
+  return !["home", "go", "todo", "talk", "design", "next", "computer", "economy", "data", "quiz", "three"].includes(t);
 });
 check(!badAnchors.length, "콘텐츠에 탭이 아닌 앵커가 있음: " + badAnchors.join(", "));
 
@@ -222,5 +223,25 @@ check(gitBlock.steps && gitBlock.steps.length >= 4, "A: GitHub 단계 4개 이�
 check(/GitHub 계정/.test(JSON.stringify(gitBlock)), "A: 계정 만들기 단계 없음");
 check(/push/.test(JSON.stringify(gitBlock)), "A: push 단계 없음");
 check(typeof gitBlock.warn === "string" && /키|비밀번호/.test(gitBlock.warn), "A: 키·비밀번호 경고 없음");
+
+// 따라하기 (go) — 재료 네 가지 모으기
+const go = CONTENT.go;
+check(go && Array.isArray(go.blocks) && go.blocks.length === 7, "go: 블록 7개(준비·재료1~4·마무리)");
+go.blocks.forEach((b, i) => {
+  ["id", "step", "title", "dur", "why", "done"].forEach((k) =>
+    check(typeof b[k] === "string" && b[k].length, `go.blocks[${i}].${k}`)
+  );
+  check(Array.isArray(b.steps) && b.steps.length, `go.blocks[${i}].steps`);
+  b.steps.forEach((st, j) => check(typeof st.t === "string" && st.t.length && (st.d || st.code), `go.blocks[${i}].steps[${j}] 내용 없음`));
+  check(Array.isArray(b.checks) && b.checks.length, `go.blocks[${i}].checks`);
+});
+const goText = JSON.stringify(go);
+check(goText.includes("731Y004") && !goText.includes("731Y004/D"), "go: 환율은 월별 통계표 731Y004");
+check(goText.includes("0000027") && goText.includes("0000053"), "go: 위안 코드 두 개 모두 안내");
+check(goText.includes("100엔"), "go: 엔화 100엔 단위 경고");
+check(goText.includes("누계"), "go: 데이터랩 누계 줄 경고");
+check(goText.includes("ecos.key") && goText.includes("gitignore"), "go: 인증키를 파일로 분리하고 올리지 않음");
+check(!/ecos\.bok\.or\.kr\/api\/StatisticSearch\/(?!sample)/.test(goText), "go: 샘플 키 외의 실제 키가 주소에 들어가 있음");
+check(go.blocks.some((b) => b.guide === "collect"), "go: Numbeo 수집 안내 상자 연결");
 
 console.log(fail === 0 ? "\nALL CHECKS PASSED" : `\n${fail} CHECK(S) FAILED`);

@@ -831,6 +831,72 @@ ol.tb-steps li::before {
 .tb-links { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 14px; }
 .tb-links a { font-size: 0.87rem; font-weight: 500; text-decoration: none; }
 
+/* ─────────────── 따라하기: 복사 상자 · 단계 주의 · 누구와 ─────────────── */
+
+.tb-head { flex-wrap: wrap; }
+.tb-who {
+  font-size: 0.72rem;
+  color: var(--teal);
+  background: var(--teal-soft);
+  border-radius: 4px;
+  padding: 0 6px;
+}
+.st-code {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin: 6px 0 4px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 7px 8px 7px 10px;
+  background: var(--teal-soft);
+}
+.st-code pre {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  user-select: all;
+}
+.copy-btn {
+  flex: none;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--teal);
+  background: transparent;
+  border: 1px solid var(--teal);
+  border-radius: 5px;
+  padding: 2px 8px;
+  cursor: pointer;
+}
+.st-warn {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.84rem;
+  line-height: 1.55;
+  border-left: 3px solid var(--red);
+  padding-left: 8px;
+}
+.tb-say {
+  margin-top: 8px;
+  border: 1px dashed var(--teal);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+.tb-say span {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--teal);
+  margin-bottom: 2px;
+}
+
 /* Numbeo 가이드 — STEP 본문 안에 들어감 */
 .nb-guide {
   margin-top: 14px;
@@ -915,6 +981,7 @@ html[data-theme="dark"] .nb-link { color: #0E1916; }
 .nb-warn-h { font-weight: 700; color: var(--red); margin-bottom: 6px; font-size: 0.95rem; }
 .nb-warn p { font-size: 0.9rem; line-height: 1.6; }
 .nb-warn-why { margin-top: 8px; color: var(--muted); }
+.nb-warn p + p { margin-top: 7px; }
 
 .nb-gotcha {
   margin-top: 11px;

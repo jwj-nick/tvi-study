@@ -56,7 +56,7 @@ try {
 }
 
 let fail = 0;
-const expect = ["view-home", "view-todo", "view-talk", "view-design", "view-next", "view-computer", "view-economy", "view-data", "view-quiz", "view-three"];
+const expect = ["view-home", "view-go", "view-todo", "view-talk", "view-design", "view-next", "view-computer", "view-economy", "view-data", "view-quiz", "view-three"];
 expect.forEach((v) => {
   const html = views[v];
   if (!html || html.length < 200) {
@@ -168,12 +168,31 @@ const nx = views["view-next"] || "";
   [!/\d+\s*(유로|엔|위안|파운드)|€\s*\d|¥\s*\d|\$\s*\d/.test(nx) && !/\d+\s*달러/.test(nx.replace(/260달러/g, "")), "9월: 지어낸 가격 수치 없음"],
 ].forEach((c) => checks.push(c));
 
+// 따라하기 (go)
+const go = views["view-go"] || "";
+[
+  [(go.match(/class="card todo-block/g) || []).length === 7, "따라하기: 블록 7개"],
+  [(go.match(/data-check=/g) || []).length === 25, "따라하기: 체크박스 25개"],
+  [(go.match(/class="st-code"/g) || []).length === 12, "따라하기: 복사 상자 12개"],
+  [(go.match(/data-copy/g) || []).length === 12, "따라하기: 복사 버튼 12개"],
+  [(go.match(/class="nb-guide"/g) || []).length === 1 && (go.match(/class="nb-link"/g) || []).length === 5, "따라하기: Numbeo 안내 상자 + 나라 링크 5개"],
+  [(go.match(/class="nb-warn"/g) || []).length === 5, "따라하기: 주의 상자 5개 (Numbeo 1 + 블록 4)"],
+  [(go.match(/<table class="tbl">/g) || []).length === 3, "따라하기: 표 3개 (Numbeo 매칭 + 주소 읽기 + 통화 코드)"],
+  [go.includes("now-chip") && go.includes("지금 여기"), "따라하기: 진도 기반 현재 단계 강조"],
+  [go.includes("progress-bar"), "따라하기: 진행률 바"],
+  [go.includes("&amp;date=2005:2026"), "따라하기: 주소의 &가 HTML로 안전하게 바뀜"],
+  [go.includes("tb-say"), "따라하기: 말할 수 있어야 하는 것"],
+  [!/\d+\s*(유로|위안|파운드)|€\s*\d|¥\s*\d|\$\s*\d/.test(go) && !/\d+\s*엔(?!\))/.test(go.replace(/100엔/g, "")) && !/\d+\s*달러/.test(go.replace(/260달러/g, "")), "따라하기: 지어낸 가격·환율 수치 없음"],
+].forEach((c) => checks.push(c));
+
 // 다른 탭들이 3분 체계와 어긋나지 않는지
 [
   [!/슬라이드 8장/.test(td), "할일: ‘슬라이드 8장’ 잔재 없음"],
   [td.includes("슬라이드 5장"), "할일: STEP 6이 5장 기준"],
   [td.includes('href="#talk"'), "할일: 3분 탭 링크"],
   [(views["view-home"] || "").includes('href="#talk"') && (views["view-home"] || "").includes('href="#next"'), "홈: 3분·9월부터 링크"],
+  [(views["view-home"] || "").includes('href="#go"'), "홈: 따라하기 링크"],
+  [!(views["view-home"] || "").includes("8월, 이번에 할 일"), "홈: 8월 할 일 목록 제거"],
 ].forEach((c) => checks.push(c));
 checks.forEach(([ok, name]) => {
   if (!ok) { console.log("  FAIL: " + name); fail++; } else console.log("  ok: " + name);

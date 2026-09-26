@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════
-//  여행 실질 가치 지수(TVI) 탐구 가이드 — 앱 동작 코드
+//  TVI 탐구 가이드 — 앱 동작 코드 (결과물 앱과는 별개의 학습용 앱)
 //  내용을 고치려면 content.js(콘텐츠) / questions.js(퀴즈)만 보면 됩니다.
 // ═══════════════════════════════════════════════════════════════
 
@@ -42,7 +42,7 @@
   }
 
   // ───────────── 라우터 ─────────────
-  const TABS = ["home", "todo", "talk", "design", "next", "computer", "economy", "data", "quiz", "three"];
+  const TABS = ["home", "go", "todo", "talk", "design", "next", "computer", "economy", "data", "quiz", "three"];
 
   function route() {
     let tab = (location.hash || "#home").slice(1);
@@ -157,15 +157,14 @@
       ${sectionHead("Timeline", "전체 일정")}
       <article class="card"><ul class="timeline">${timeline}</ul></article>
 
-      ${sectionHead("This Week", "8월, 이번에 할 일")}
-      <article class="card">
-        <ul class="week-list">
-          ${h.thisWeek.map((w) => `<li><span class="w-date">${w.date}</span><span>${w.task}</span></li>`).join("")}
-        </ul>
-        <div class="tb-links" style="margin-top:12px">
-          <a href="#todo">할 일을 순서대로 자세히 보기 →</a>
-          <a href="#talk">발표는 3분 — 원고 5장 보기 →</a>
-          <a href="#next">발표 끝나고 할 일 (9월부터) →</a>
+      ${sectionHead("Now", "지금 할 일")}
+      <article class="card todo-block now">
+        <h3>${h.now.title}</h3>
+        <p class="tb-why">${h.now.body}</p>
+        <div class="tb-links">
+          <a href="#go">따라하기 — 재료 모으기 시작 →</a>
+          <a href="#next">9월부터 전체 로드맵 →</a>
+          <a href="#talk">8월 중간발표 원고 다시 보기 →</a>
         </div>
       </article>
     `;
@@ -237,14 +236,10 @@
     });
   }
 
-  function renderTodo() {
-    const t = CONTENT.todo;
-    const nb = t.numbeo;
-
-    const allChecks = [
-      ...t.blocks.flatMap((b) => b.checks.map((c) => c.id)),
-      ...t.minimum.checks.map((c) => c.id),
-    ];
+  // Numbeo 안내 상자 두 가지 — 관찰(observe) · 수집(collect).
+  // 할일 탭(STEP 2·4)과 따라하기 탭(재료 1)이 같은 내용을 쓴다.
+  function numbeoGuides() {
+    const nb = CONTENT.todo.numbeo;
 
     // 나라별 물가 페이지로 바로 가는 링크. STEP 2와 STEP 4 양쪽에 붙인다.
     const nbLinks = `
@@ -312,7 +307,18 @@
         <p class="nb-note">${co.recordNote}</p>
       </div>`;
 
-    const guides = { observe: guideObserve, collect: guideCollect };
+    return { observe: guideObserve, collect: guideCollect };
+  }
+
+  function renderTodo() {
+    const t = CONTENT.todo;
+
+    const allChecks = [
+      ...t.blocks.flatMap((b) => b.checks.map((c) => c.id)),
+      ...t.minimum.checks.map((c) => c.id),
+    ];
+
+    const guides = numbeoGuides();
 
     // 아직 다 끝내지 않은 첫 STEP을 "지금 여기"로 표시한다. 날짜가 밀려도 항상 맞는다.
     const blockDone = (b) => b.checks.every((c) => localStorage.getItem("tvi_check_" + c.id) === "1");
@@ -419,6 +425,131 @@
     bindChecks(view, () => {
       const y = typeof window.scrollY === "number" ? window.scrollY : 0;
       renderTodo();
+      window.scrollTo(0, y);
+    });
+  }
+
+  // ───────────── 따라하기: 재료 네 가지 모으기 ─────────────
+  // 할일 탭과 같은 카드 모양(단계 · 끝난 신호 · 체크 · "지금 여기")에
+  // 복사 가능한 명령/주소 상자, 표, 빨간 주의 상자를 더했다.
+
+  // 화면에 그대로 보여야 하는 글자(주소의 & 등)를 HTML로 안전하게 바꾼다.
+  function esc(str) {
+    return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+
+  function codeBox(code) {
+    return `<div class="st-code"><pre>${esc(code)}</pre><button type="button" class="copy-btn" data-copy>복사</button></div>`;
+  }
+
+  function bindCopy(root) {
+    root.querySelectorAll("[data-copy]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const text = btn.previousElementSibling.textContent;
+        const done = () => {
+          btn.textContent = "복사됨";
+          setTimeout(() => (btn.textContent = "복사"), 1500);
+        };
+        if (navigator.clipboard) navigator.clipboard.writeText(text).then(done, () => {});
+      });
+    });
+  }
+
+  function renderGo() {
+    const g = CONTENT.go;
+    const guides = numbeoGuides();
+    const allChecks = g.blocks.flatMap((b) => b.checks.map((c) => c.id));
+
+    const blockDone = (b) => b.checks.every((c) => localStorage.getItem("tvi_check_" + c.id) === "1");
+    const currentIdx = g.blocks.findIndex((b) => !blockDone(b));
+
+    const table = (tb) => `
+      <p class="nb-h">${tb.title}</p>
+      <div class="tbl-wrap"><table class="tbl">
+        <thead><tr>${tb.head.map((h) => `<th>${h}</th>`).join("")}</tr></thead>
+        <tbody>${tb.rows.map((r) => `<tr><td><code>${esc(r[0])}</code></td><td>${r[1]}</td></tr>`).join("")}</tbody>
+      </table></div>
+      ${tb.note ? `<p class="nb-note">${tb.note}</p>` : ""}`;
+
+    const blocks = g.blocks
+      .map((b, i) => {
+        const isNow = i === currentIdx;
+        const isDone = blockDone(b);
+        return `<article class="card todo-block ${isNow ? "now" : ""} ${isDone ? "past" : ""}" id="gb-${b.id}">
+          <div class="tb-head">
+            <span class="tb-date">${b.step}</span>
+            <span class="tb-dur">${b.dur}</span>
+            ${b.who ? `<span class="tb-who">${b.who}</span>` : ""}
+            ${isNow ? '<span class="now-chip">지금 여기</span>' : ""}
+            ${isDone ? '<span class="done-chip">완료</span>' : ""}
+          </div>
+          <h3>${b.title}</h3>
+          <p class="tb-why">${b.why}</p>
+
+          <ol class="tb-steps">
+            ${b.steps
+              .map(
+                (s) => `<li><span class="st-t">${s.t}</span>
+                  ${s.code ? codeBox(s.code) : ""}
+                  ${s.d ? `<span class="st-d">${s.d}</span>` : ""}
+                  ${s.warn ? `<span class="st-warn">${s.warn}</span>` : ""}</li>`
+              )
+              .join("")}
+          </ol>
+
+          ${b.guide ? guides[b.guide] : ""}
+          ${b.tables ? b.tables.map(table).join("") : ""}
+          ${
+            b.warns
+              ? `<div class="nb-warn"><p class="nb-warn-h">꼭 알고 넘어갈 것</p>${b.warns.map((w) => `<p>${w}</p>`).join("")}</div>`
+              : ""
+          }
+          ${b.extra ? `<p class="tb-extra">${b.extra}</p>` : ""}
+          <p class="tb-done"><span>끝난 신호</span>${b.done}</p>
+          ${b.say ? `<p class="tb-say"><span>끝나면 말할 수 있어야 하는 것</span>${b.say}</p>` : ""}
+
+          <ul class="check-list tb-checks">
+            ${b.checks
+              .map((c) => `<li><label><input type="checkbox" data-check="${c.id}"><span class="c-task">${c.text}</span></label></li>`)
+              .join("")}
+          </ul>
+          ${
+            b.links
+              ? `<div class="tb-links">${b.links.map((l) => `<a href="${l.href}">${l.label} →</a>`).join("")}</div>`
+              : ""
+          }
+        </article>`;
+      })
+      .join("");
+
+    const view = $("#view-go");
+    view.innerHTML = `
+      ${sectionHead("Follow Along", "따라하기 — 재료 네 가지 모으기", g.lead)}
+
+      <article class="card">
+        <h3>${g.status.title}</h3>
+        <p class="definition">${g.status.body}</p>
+        <p class="nb-gotcha">${g.status.rule}</p>
+        <div class="progress-wrap">
+          <div class="progress-bar"><span id="goBar"></span></div>
+          <p class="progress-text" id="goText"></p>
+        </div>
+      </article>
+
+      ${blocks}
+    `;
+
+    const done = allChecks.filter((id) => localStorage.getItem("tvi_check_" + id) === "1").length;
+    const bar = $("#goBar");
+    if (bar) bar.style.width = Math.round((done / allChecks.length) * 100) + "%";
+    const txt = $("#goText");
+    if (txt) txt.textContent = `${allChecks.length}개 중 ${done}개 완료 · 최종발표 ${ddayText(CONTENT.meta.final)}`;
+
+    bindCopy(view);
+    // 체크가 바뀌면 "지금 여기" 위치도 달라지므로 다시 그린다. 스크롤 위치는 유지.
+    bindChecks(view, () => {
+      const y = typeof window.scrollY === "number" ? window.scrollY : 0;
+      renderGo();
       window.scrollTo(0, y);
     });
   }
@@ -1202,6 +1333,7 @@
   initTheme();
   initDday();
   renderHome();
+  renderGo();
   renderTodo();
   renderTalk();
   renderDesign();

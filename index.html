@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>여행 실질 가치 지수(TVI) 탐구 가이드</title>
-  <meta name="description" content="여행 실질 가치 지수(TVI) — 100만원으로 5개국에서 며칠? 환율과 물가를 함께 계산해 여행의 실질 가치를 재는 지수. 고1 AI 융합 탐구 프로젝트 학습 가이드.">
+  <title>TVI 탐구 가이드</title>
+  <meta name="description" content="TVI 탐구 가이드 — 여행 실질 가치 지수(TVI) 프로젝트를 준비하며 공부하는 학습용 앱. 100만원으로 5개국에서 며칠? 환율과 물가를 함께 계산하는 지수를 만드는 과정.">
   <meta name="theme-color" content="#14695A">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%2314695A'/><text x='50' y='68' font-size='52' text-anchor='middle' fill='%23F8F9F6' font-family='monospace' font-weight='bold'>₩</text></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -18,29 +18,31 @@
     <div class="topbar-inner">
       <a class="brand" href="#home">
         <span class="brand-mark">TVI</span>
-        <span class="brand-name">여행 실질 가치 지수</span>
+        <span class="brand-name">탐구 가이드</span>
       </a>
       <div class="topbar-right">
-        <span class="dday-chip" id="ddayChip" title="중간발표까지"></span>
+        <span class="dday-chip" id="ddayChip" title="발표까지 남은 날"></span>
         <button class="theme-toggle" id="themeToggle" type="button" aria-label="화면 밝기 전환">◐</button>
       </div>
     </div>
     <nav class="tabs" id="tabs" aria-label="섹션">
       <a href="#home"    data-tab="home">홈</a>
-      <a href="#todo"    data-tab="todo">할일</a>
-      <a href="#talk"    data-tab="talk">3분</a>
-      <a href="#design"  data-tab="design">설계</a>
+      <a href="#go"      data-tab="go">따라하기</a>
       <a href="#next"    data-tab="next">9월부터</a>
-      <a href="#computer" data-tab="computer">컴퓨터</a>
-      <a href="#economy" data-tab="economy">경제</a>
       <a href="#data"    data-tab="data">데이터</a>
+      <a href="#economy" data-tab="economy">경제</a>
+      <a href="#computer" data-tab="computer">컴퓨터</a>
       <a href="#quiz"    data-tab="quiz">퀴즈</a>
+      <a href="#talk"    data-tab="talk">8월 발표</a>
+      <a href="#todo"    data-tab="todo">8월 할일</a>
+      <a href="#design"  data-tab="design">설계</a>
       <a href="#three"   data-tab="three">다른안</a>
     </nav>
   </header>
 
   <main id="main">
     <section id="view-home" class="view" hidden></section>
+    <section id="view-go" class="view" hidden></section>
     <section id="view-todo" class="view" hidden></section>
     <section id="view-talk" class="view" hidden></section>
     <section id="view-design" class="view" hidden></section>
@@ -53,7 +55,8 @@
   </main>
 
   <footer class="footer">
-    <p>여행 실질 가치 지수(TVI) 탐구 프로젝트의 학습 가이드 · 2026.08 ~ 10</p>
+    <p>TVI 탐구 가이드 · 여행 실질 가치 지수(TVI) 프로젝트를 준비하며 공부하는 학습용 앱 · 2026.08 ~ 10</p>
+    <p class="footer-rule">10월 7일에 출품할 결과물 앱과는 다른 앱입니다.</p>
     <p class="footer-rule">이 가이드의 예시 숫자는 전부 가상 값입니다. 진짜 데이터는 출처에서 직접, 날짜와 함께.</p>
   </footer>
 
