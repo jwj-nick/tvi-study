@@ -28,6 +28,7 @@ const checkIds = [
   ...CONTENT.talk.check.items.map((c) => c.id),
   ...CONTENT.three.check.items.map((c) => c.id),
   ...CONTENT.next.blocks.flatMap((b) => b.checks.map((c) => c.id)),
+  ...CONTENT.next.phases.flatMap((p) => p.checks.map((c) => c.id)),
   ...CONTENT.todo.blocks.flatMap((b) => b.checks.map((c) => c.id)),
   ...CONTENT.todo.minimum.checks.map((c) => c.id),
   ...CONTENT.go.blocks.flatMap((b) => b.checks.map((c) => c.id)),
@@ -175,10 +176,20 @@ check(
 // ─────────── 9월부터 로드맵 ───────────
 const nx = CONTENT.next;
 check(nx && Array.isArray(nx.blocks) && nx.blocks.length === 4, "next.blocks는 4개(A~D)");
-["lead", "weeksNote"].forEach((k) => check(typeof nx[k] === "string" && nx[k].length, `next.${k}`));
-check(nx.gate && nx.gate.title && nx.gate.body, "next.gate");
-check(Array.isArray(nx.weeks) && nx.weeks.length === 4, "next.weeks 4주");
-check(nx.firstDay && Array.isArray(nx.firstDay.items) && nx.firstDay.items.length, "next.firstDay");
+["lead", "toolboxIntro"].forEach((k) => check(typeof nx[k] === "string" && nx[k].length, `next.${k}`));
+check(nx.brief && nx.brief.lines.length === 4 && nx.brief.confirm.length >= 3, "next.brief (5분 브리핑 4줄 + 확인할 것)");
+check(Array.isArray(nx.phases) && nx.phases.length === 7, "next.phases 일곱 단계");
+nx.phases.forEach((p, i) => {
+  ["id", "n", "from", "to", "when", "title", "goal", "done"].forEach((k) =>
+    check(typeof p[k] === "string" && p[k].length, `next.phases[${i}].${k}`)
+  );
+  check(/^2026-(09|10)-\d\d$/.test(p.from) && /^2026-(09|10)-\d\d$/.test(p.to) && p.from <= p.to, `next.phases[${i}] 날짜 형식/순서`);
+  if (i > 0) check(nx.phases[i - 1].to < p.from, `next.phases[${i}]가 앞 단계와 겹침`);
+  check(Array.isArray(p.steps) && p.steps.length && Array.isArray(p.checks) && p.checks.length, `next.phases[${i}] steps/checks`);
+});
+check(nx.phases[nx.phases.length - 1].to === CONTENT.meta.final, "마지막 단계 = 최종발표일");
+check(/검증/.test(nx.phases[2].title), "③이 검증 단계");
+check(nx.cut && nx.cut.items.length >= 4 && /검증/.test(nx.cut.items[nx.cut.items.length - 1].t), "버리는 순서 — 마지막은 '검증은 버리지 않는다'");
 nx.blocks.forEach((b, i) => {
   ["id", "tag", "title", "dur", "why"].forEach((k) =>
     check(typeof b[k] === "string" && b[k].length, `next.blocks[${i}].${k}`)

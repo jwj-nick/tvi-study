@@ -162,10 +162,16 @@ const nx = views["view-next"] || "";
   [(nx.match(/class="src-badge/g) || []).length === 4, "9월: 손/자동 배지 4개"],
   [nx.includes("ol class=\"pipe\"") || nx.includes('class="pipe"'), "9월: 만들 것 파이프라인"],
   [nx.includes("ai-box"), "9월: AI에게 무엇을 시키나"],
-  [(nx.match(/data-check=/g) || []).length === 18, "9월: 체크박스 18개"],
-  [(nx.match(/class="week-plan"/g) || []).length === 1, "9월: 4주 개요"],
-  [nx.includes("9월 13일"), "9월: 복귀 시점 명시"],
-  [!/\d+\s*(유로|엔|위안|파운드)|€\s*\d|¥\s*\d|\$\s*\d/.test(nx) && !/\d+\s*달러/.test(nx.replace(/260달러/g, "")), "9월: 지어낸 가격 수치 없음"],
+  [(nx.match(/data-check=/g) || []).length === 42, "10/7까지: 체크박스 42개 (단계 24 + 도구 상자 18)"],
+  [nx.includes("5분 브리핑") && nx.includes("brief-lines"), "10/7까지: 5분 브리핑"],
+  [(nx.match(/class="week-plan phase-plan"/g) || []).length === 1 && (nx.match(/class="nw-n"/g) || []).length === 7, "10/7까지: 한눈에 일곱 단계"],
+  [(nx.match(/id="ph-p\d"/g) || []).length === 7, "10/7까지: 단계 카드 7개"],
+  [(nx.match(/class="st-code"/g) || []).length === 2, "10/7까지: Claude 부탁 상자 2개 (②·⑤)"],
+  [nx.includes("학교에 확인할 것"), "10/7까지: 학교 확인 사항"],
+  [nx.includes("버리는 순서") && nx.includes("검증은 버리지 않는다"), "10/7까지: 버리는 순서"],
+  [nx.includes("도구 상자"), "10/7까지: A~D는 도구 상자로"],
+  [!nx.includes("9월 13일"), "10/7까지: 옛 복귀일(9/13) 문구 제거"],
+  [!/\d+\s*(유로|엔|위안|파운드)|€\s*\d|¥\s*\d|\$\s*\d/.test(nx.replace(/100엔/g, "")) && !/\d+\s*달러/.test(nx.replace(/260달러/g, "")), "10/7까지: 지어낸 가격 수치 없음 (100엔 단위 안내는 예외)"],
 ].forEach((c) => checks.push(c));
 
 // 따라하기 (go)

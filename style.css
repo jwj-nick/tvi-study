@@ -1749,6 +1749,21 @@ html[data-theme="dark"] .btn-primary:hover { background: var(--teal); opacity: 0
   text-align: center;
 }
 .nw-label { font-weight: 700; }
+.ph-when { font-family: var(--font-mono); font-size: 0.74rem; font-weight: 500; color: var(--muted); margin-left: 4px; }
+.phase-plan li.now .nw-label { color: var(--teal); }
+.brief-lines {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 8px 12px;
+  margin-top: 8px;
+  font-size: 0.92rem;
+  line-height: 1.6;
+}
+.brief-lines dt { font-weight: 700; color: var(--teal); }
+@media (max-width: 420px) {
+  .brief-lines { grid-template-columns: 1fr; gap: 2px; }
+  .brief-lines dd { margin-bottom: 6px; }
+}
 .nw-sub { font-size: 0.85rem; color: var(--muted); line-height: 1.6; }
 
 .next-block { border-left: 3px solid var(--teal); }

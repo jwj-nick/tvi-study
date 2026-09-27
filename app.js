@@ -163,7 +163,7 @@
         <p class="tb-why">${h.now.body}</p>
         <div class="tb-links">
           <a href="#go">따라하기 — 재료 모으기 시작 →</a>
-          <a href="#next">9월부터 전체 로드맵 →</a>
+          <a href="#next">10/7까지 — 끝까지 가는 지도 (5분 브리핑) →</a>
           <a href="#talk">8월 중간발표 원고 다시 보기 →</a>
         </div>
       </article>
@@ -966,22 +966,16 @@
 
       <article class="card">
         <h3>발표가 끝나면</h3>
-        <p class="definition">받은 질문을 그날 바로 적어두자. 답을 못 한 질문이 9월에 할 일이 된다. 그다음은 <a href="#next">9월부터</a> 탭으로.</p>
-        <a class="btn-primary" href="#next">9월부터 할 일 보기</a>
+        <p class="definition">받은 질문을 그날 바로 적어두자. 답을 못 한 질문이 9월에 할 일이 된다. 그다음은 <a href="#next">10/7까지</a> 탭으로.</p>
+        <a class="btn-primary" href="#next">10/7까지 할 일 보기</a>
       </article>
     `;
     bindCheckboxes(view);
   }
 
-  // ───────────── 9월부터: 중간발표 이후 ─────────────
+  // ───────────── 10/7까지 (구 9월부터): 끝까지 가는 지도 ─────────────
   function renderNext() {
     const n = CONTENT.next;
-
-    const weeks = n.weeks
-      .map(
-        (w) => `<li><span class="nw-n">${w.n}</span><p class="nw-label">${w.label}</p><p class="nw-sub">${w.sub}</p></li>`
-      )
-      .join("");
 
     const blocks = n.blocks
       .map((b) => {
@@ -1081,31 +1075,81 @@
       })
       .join("");
 
+    // 일곱 단계 — 오늘 날짜가 들어 있는 단계에 '지금' 표시
+    const isNowPhase = (p) => daysUntil(p.from) <= 0 && daysUntil(p.to) >= 0;
+    const summary = n.phases
+      .map(
+        (p) => `<li class="${isNowPhase(p) ? "now" : ""}"><span class="nw-n">${p.n}</span>
+          <p class="nw-label">${p.title} <span class="ph-when">${p.when}</span>${isNowPhase(p) ? ' <span class="now-chip">지금</span>' : ""}</p>
+          <p class="nw-sub">끝난 신호 — ${p.done}</p></li>`
+      )
+      .join("");
+
+    const phases = n.phases
+      .map(
+        (p) => `<article class="card todo-block ${isNowPhase(p) ? "now" : ""}" id="ph-${p.id}">
+          <div class="tb-head">
+            <span class="tb-date">단계 ${p.n} · ${p.when}</span>
+            ${isNowPhase(p) ? '<span class="now-chip">지금</span>' : ""}
+          </div>
+          <h3>${p.title}</h3>
+          <p class="tb-why">${p.goal}</p>
+          <ol class="tb-steps">
+            ${p.steps.map((s) => `<li><span class="st-t">${s.t}</span>${s.d ? `<span class="st-d">${s.d}</span>` : ""}</li>`).join("")}
+          </ol>
+          ${p.ask ? `<p class="nb-h">Claude에게 이렇게 부탁한다</p>${codeBox(p.ask)}` : ""}
+          ${p.warn ? `<div class="nb-warn"><p>${p.warn}</p></div>` : ""}
+          <p class="tb-done"><span>끝난 신호</span>${p.done}</p>
+          ${p.output ? `<p class="tb-extra">저장 위치 — ${p.output}</p>` : ""}
+          ${p.learn ? `<p class="tb-say"><span>이 단계에서 말할 수 있어야 하는 것</span>${p.learn}</p>` : ""}
+          <ul class="check-list tb-checks">
+            ${p.checks
+              .map((c) => `<li><label><input type="checkbox" data-check="${c.id}"><span class="c-task">${c.text}</span></label></li>`)
+              .join("")}
+          </ul>
+          ${p.link ? `<div class="tb-links"><a href="${p.link.href}">${p.link.label} →</a></div>` : ""}
+        </article>`
+      )
+      .join("");
+
+    const b = n.brief;
     const view = $("#view-next");
     view.innerHTML = `
-      ${sectionHead("After the Midterm", "9월부터 — 진짜 작업", n.lead)}
+      ${sectionHead("Road to 10/7", "10월 7일까지 — 끝까지 가는 지도", n.lead)}
 
-      <div class="warnbox">
-        <b>${n.gate.title}</b>
-        <p style="margin-top:6px">${n.gate.body}</p>
-        <p style="margin-top:6px">${n.gate.resume}</p>
-      </div>
-
-      ${sectionHead("4 Weeks", "9/13 ~ 10/7 네 주")}
-      <article class="card">
-        <ul class="week-plan">${weeks}</ul>
-        <p class="prep-note">${n.weeksNote}</p>
+      <article class="card todo-block now brief">
+        <h3>${b.title}</h3>
+        <dl class="brief-lines">
+          ${b.lines.map((l) => `<dt>${l[0]}</dt><dd>${l[1]}</dd>`).join("")}
+        </dl>
+        <div class="warnbox" style="margin-top:12px">
+          <b>${b.confirmTitle}</b>
+          <ul class="points" style="margin-top:6px">${b.confirm.map((c) => `<li>${c}</li>`).join("")}</ul>
+          <p style="margin-top:6px">${b.confirmNote}</p>
+        </div>
+        <p class="progress-text" style="margin-top:10px">최종발표 ${ddayText(CONTENT.meta.final)}</p>
       </article>
 
-      ${blocks}
-
-      ${sectionHead("Day One", n.firstDay.title, n.firstDay.intro)}
+      ${sectionHead("At a Glance", "한눈에 — 일곱 단계")}
       <article class="card">
-        <ol class="tb-steps">
-          ${n.firstDay.items.map((i) => `<li><b>${i.t}</b><span>${i.d}</span></li>`).join("")}
+        <ul class="week-plan phase-plan">${summary}</ul>
+        <p class="prep-note">날짜는 권장 일정이다. 순서는 바꾸지 않는다 — 재료가 없으면 계산이 안 되고, 계산이 없으면 검증이 안 된다.</p>
+      </article>
+
+      ${phases}
+
+      <article class="card">
+        <h3>${n.cut.title}</h3>
+        <p class="definition">${n.cut.intro}</p>
+        <ol class="tb-steps" style="margin-top:10px">
+          ${n.cut.items.map((i) => `<li><span class="st-t">${i.t}</span><span class="st-d">${i.d}</span></li>`).join("")}
         </ol>
       </article>
+
+      ${sectionHead("Toolbox", "도구 상자 — 필요할 때 펼쳐 보기", n.toolboxIntro)}
+      ${blocks}
     `;
+    bindCopy(view);
     bindCheckboxes(view);
   }
 
