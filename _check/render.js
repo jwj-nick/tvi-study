@@ -178,9 +178,9 @@ const nx = views["view-next"] || "";
 const go = views["view-go"] || "";
 [
   [(go.match(/class="card todo-block/g) || []).length === 7, "따라하기: 블록 7개"],
-  [(go.match(/data-check=/g) || []).length === 25, "따라하기: 체크박스 25개"],
-  [(go.match(/class="st-code"/g) || []).length === 12, "따라하기: 복사 상자 12개"],
-  [(go.match(/data-copy/g) || []).length === 12, "따라하기: 복사 버튼 12개"],
+  [(go.match(/data-check=/g) || []).length === 27, "따라하기: 체크박스 27개"],
+  [(go.match(/class="st-code"/g) || []).length === 18, "따라하기: 복사 상자 18개"],
+  [(go.match(/data-copy/g) || []).length === 18, "따라하기: 복사 버튼 18개"],
   [(go.match(/class="nb-guide"/g) || []).length === 1 && (go.match(/class="nb-link"/g) || []).length === 5, "따라하기: Numbeo 안내 상자 + 나라 링크 5개"],
   [(go.match(/class="nb-warn"/g) || []).length === 5, "따라하기: 주의 상자 5개 (Numbeo 1 + 블록 4)"],
   [(go.match(/<table class="tbl">/g) || []).length === 3, "따라하기: 표 3개 (Numbeo 매칭 + 주소 읽기 + 통화 코드)"],

@@ -1075,8 +1075,10 @@
       })
       .join("");
 
-    // 일곱 단계 — 오늘 날짜가 들어 있는 단계에 '지금' 표시
-    const isNowPhase = (p) => daysUntil(p.from) <= 0 && daysUntil(p.to) >= 0;
+    // 일정이 겹치는 날이 있어(사흘 압축) 날짜가 아니라 진도로 '지금'을 정한다: 체크가 덜 끝난 첫 단계.
+    const phaseDone = (p) => p.checks.every((c) => localStorage.getItem("tvi_check_" + c.id) === "1");
+    const nowPhase = n.phases.find((p) => !phaseDone(p));
+    const isNowPhase = (p) => p === nowPhase;
     const summary = n.phases
       .map(
         (p) => `<li class="${isNowPhase(p) ? "now" : ""}"><span class="nw-n">${p.n}</span>

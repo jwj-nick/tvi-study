@@ -184,7 +184,7 @@ nx.phases.forEach((p, i) => {
     check(typeof p[k] === "string" && p[k].length, `next.phases[${i}].${k}`)
   );
   check(/^2026-(09|10)-\d\d$/.test(p.from) && /^2026-(09|10)-\d\d$/.test(p.to) && p.from <= p.to, `next.phases[${i}] 날짜 형식/순서`);
-  if (i > 0) check(nx.phases[i - 1].to < p.from, `next.phases[${i}]가 앞 단계와 겹침`);
+  if (i > 0) check(nx.phases[i - 1].to <= p.from, `next.phases[${i}]가 앞 단계보다 먼저 시작함`);
   check(Array.isArray(p.steps) && p.steps.length && Array.isArray(p.checks) && p.checks.length, `next.phases[${i}] steps/checks`);
 });
 check(nx.phases[nx.phases.length - 1].to === CONTENT.meta.final, "마지막 단계 = 최종발표일");
