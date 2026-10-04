@@ -46,6 +46,7 @@ global.clearTimeout = () => {};
 
 eval(fs.readFileSync(dir + "content.js", "utf8") + "\nglobal.CONTENT = CONTENT;");
 eval(fs.readFileSync(dir + "questions.js", "utf8") + "\nglobal.QUESTIONS = QUESTIONS;");
+eval(fs.readFileSync(dir + "final.js", "utf8") + "\nglobal.FINAL = FINAL;");
 
 try {
   eval(fs.readFileSync(dir + "app.js", "utf8"));
@@ -56,7 +57,7 @@ try {
 }
 
 let fail = 0;
-const expect = ["view-home", "view-go", "view-todo", "view-talk", "view-design", "view-next", "view-computer", "view-economy", "view-data", "view-quiz", "view-three"];
+const expect = ["view-home", "view-inside", "view-lessons", "view-travel", "view-present", "view-path", "view-start", "view-go", "view-todo", "view-talk", "view-design", "view-next", "view-computer", "view-economy", "view-data", "view-quiz", "view-three"];
 expect.forEach((v) => {
   const html = views[v];
   if (!html || html.length < 200) {
@@ -196,9 +197,31 @@ const go = views["view-go"] || "";
   [!/슬라이드 8장/.test(td), "할일: ‘슬라이드 8장’ 잔재 없음"],
   [td.includes("슬라이드 5장"), "할일: STEP 6이 5장 기준"],
   [td.includes('href="#talk"'), "할일: 3분 탭 링크"],
-  [(views["view-home"] || "").includes('href="#talk"') && (views["view-home"] || "").includes('href="#next"'), "홈: 3분·9월부터 링크"],
-  [(views["view-home"] || "").includes('href="#go"'), "홈: 따라하기 링크"],
-  [!(views["view-home"] || "").includes("8월, 이번에 할 일"), "홈: 8월 할 일 목록 제거"],
+  [(views["view-start"] || "").includes('href="#talk"') && (views["view-start"] || "").includes('href="#next"'), "처음 홈: 3분·9월부터 링크"],
+  [(views["view-start"] || "").includes('href="#go"'), "처음 홈: 따라하기 링크"],
+  [!(views["view-start"] || "").includes("8월, 이번에 할 일"), "처음 홈: 8월 할 일 목록 제거"],
+].forEach((c) => checks.push(c));
+// 최종판 (2026-10-04)
+const fh = views["view-home"] || "", fp = views["view-path"] || "", fi = views["view-inside"] || "";
+const fl = views["view-lessons"] || "", ft = views["view-travel"] || "", fpr = views["view-present"] || "";
+[
+  [(fh.match(/class="card fin-result"/g) || []).length === 3, "홈: 최종 결과 3줄"],
+  [(fh.match(/class="fin-src"/g) || []).length === 3, "홈: 결과마다 출처"],
+  [(fh.match(/class="fin-tile"/g) || []).length === 6, "홈: 가이드 지도 6칸"],
+  [fh.includes("jwj-nick.github.io/high1/tvi/"), "홈: 결과물 앱 링크"],
+  [(fp.match(/<dt>나중에 보니<\/dt>/g) || []).length === 8, "지나온 길: 시점 8개, 모두 '나중에 보니'"],
+  [(fp.match(/class="fin-tile"/g) || []).length === 7 && fp.includes('href="#start"'), "지나온 길: 예전 탭 7개(처음 홈 포함)"],
+  [(fi.match(/class="card fin-script"/g) || []).length === 11, "앱 뜯어보기: 스크립트 11개"],
+  [(fi.match(/class="fin-stage"/g) || []).length === 4, "앱 뜯어보기: 흐름 4단계"],
+  [(fi.match(/class="fin-ask"/g) || []).length === 11, "앱 뜯어보기: 스크립트마다 체크 질문"],
+  [(fl.match(/class="card fin-lesson"/g) || []).length === 9, "교훈: 카드 9장"],
+  [(fl.match(/<tr><td>/g) || []).length === 4, "교훈: AI 실수 사례 4개"],
+  [(fl.match(/data-field=/g) || []).length === 2, "교훈: 내 말로 적기 2칸"],
+  [(ft.match(/class="db-n"/g) || []).length === 5 && (ft.match(/class="st-code"/g) || []).length === 1, "여행: 5단계 + 에이전트 부탁 상자"],
+  [fpr.includes("<iframe") && fpr.includes("present.html"), "발표: 슬라이드 미리 보기 + 연습 페이지 링크"],
+  [(fpr.match(/data-check=/g) || []).length === 7, "발표: 리허설 체크 7개"],
+  [(fpr.match(/data-field=/g) || []).length === 8, "발표: 예상 질문 내 답 8칸"],
+  [fpr.includes("합계 4분 55초"), "발표: 합계 4분 55초"],
 ].forEach((c) => checks.push(c));
 checks.forEach(([ok, name]) => {
   if (!ok) { console.log("  FAIL: " + name); fail++; } else console.log("  ok: " + name);

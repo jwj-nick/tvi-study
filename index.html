@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>TVI 탐구 가이드</title>
-  <meta name="description" content="TVI 탐구 가이드 — 여행 실질 가치 지수(TVI) 프로젝트를 준비하며 공부하는 학습용 앱. 100만원으로 5개국에서 며칠? 환율과 물가를 함께 계산하는 지수를 만드는 과정.">
+  <meta name="description" content="TVI 탐구 가이드 — 여행 실질 가치 지수(TVI) 탐구를 처음부터 끝까지 이해하고, 발표를 준비하고, 실제 여행에 써먹는 학습용 앱. 100만원으로 5개국에서 며칠?">
   <meta name="theme-color" content="#14695A">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%2314695A'/><text x='50' y='68' font-size='52' text-anchor='middle' fill='%23F8F9F6' font-family='monospace' font-weight='bold'>₩</text></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -26,22 +26,27 @@
       </div>
     </div>
     <nav class="tabs" id="tabs" aria-label="섹션">
-      <a href="#home"    data-tab="home">홈</a>
-      <a href="#go"      data-tab="go">따라하기</a>
-      <a href="#next"    data-tab="next">10/7까지</a>
-      <a href="#data"    data-tab="data">데이터</a>
-      <a href="#economy" data-tab="economy">경제</a>
+      <a href="#home"     data-tab="home">홈</a>
+      <a href="#inside"   data-tab="inside">앱 뜯어보기</a>
+      <a href="#lessons"  data-tab="lessons">교훈</a>
+      <a href="#travel"   data-tab="travel">여행에 쓰기</a>
+      <a href="#present"  data-tab="present">발표</a>
+      <a href="#economy"  data-tab="economy">경제</a>
       <a href="#computer" data-tab="computer">컴퓨터</a>
-      <a href="#quiz"    data-tab="quiz">퀴즈</a>
-      <a href="#talk"    data-tab="talk">8월 발표</a>
-      <a href="#todo"    data-tab="todo">8월 할일</a>
-      <a href="#design"  data-tab="design">설계</a>
-      <a href="#three"   data-tab="three">다른안</a>
+      <a href="#data"     data-tab="data">데이터</a>
+      <a href="#quiz"     data-tab="quiz">퀴즈</a>
+      <a href="#path"     data-tab="path">지나온 길</a>
     </nav>
   </header>
 
   <main id="main">
     <section id="view-home" class="view" hidden></section>
+    <section id="view-inside" class="view" hidden></section>
+    <section id="view-lessons" class="view" hidden></section>
+    <section id="view-travel" class="view" hidden></section>
+    <section id="view-present" class="view" hidden></section>
+    <section id="view-path" class="view" hidden></section>
+    <section id="view-start" class="view" hidden></section>
     <section id="view-go" class="view" hidden></section>
     <section id="view-todo" class="view" hidden></section>
     <section id="view-talk" class="view" hidden></section>
@@ -55,12 +60,13 @@
   </main>
 
   <footer class="footer">
-    <p>TVI 탐구 가이드 · 여행 실질 가치 지수(TVI) 프로젝트를 준비하며 공부하는 학습용 앱 · 2026.08 ~ 10</p>
-    <p class="footer-rule">10월 7일에 출품할 결과물 앱과는 다른 앱입니다.</p>
-    <p class="footer-rule">이 가이드의 예시 숫자는 전부 가상 값입니다. 진짜 데이터는 출처에서 직접, 날짜와 함께.</p>
+    <p>TVI 탐구 가이드 · 여행 실질 가치 지수(TVI) 프로젝트를 처음부터 끝까지 이해하는 학습용 앱 · 2026.08 ~ 10</p>
+    <p class="footer-rule">출품한 결과물 앱은 따로 있습니다: <a href="https://jwj-nick.github.io/high1/tvi/" target="_blank" rel="noopener noreferrer">jwj-nick.github.io/high1/tvi</a></p>
+    <p class="footer-rule">개념 설명 · 퀴즈의 계산 예시는 가상 값입니다. 결과 · 회고에 나오는 실제 숫자에는 출처를 붙였습니다.</p>
   </footer>
 
   <script src="content.js"></script>
+  <script src="final.js"></script>
   <script src="questions.js"></script>
   <script src="app.js"></script>
 </body>

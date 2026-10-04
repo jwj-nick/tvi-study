@@ -42,7 +42,7 @@
   }
 
   // ───────────── 라우터 ─────────────
-  const TABS = ["home", "go", "todo", "talk", "design", "next", "computer", "economy", "data", "quiz", "three"];
+  const TABS = ["home", "inside", "lessons", "travel", "present", "path", "start", "go", "todo", "talk", "design", "next", "computer", "economy", "data", "quiz", "three"];
 
   function route() {
     let tab = (location.hash || "#home").slice(1);
@@ -88,6 +88,7 @@
   }
 
   // ───────────── 홈 ─────────────
+  // 8월의 홈. 최종판에서는 '지나온 길' → '처음 홈'(#start)에서 연다.
   function renderHome() {
     const h = CONTENT.home;
 
@@ -105,7 +106,7 @@
       })
       .join("");
 
-    $("#view-home").innerHTML = `
+    $("#view-start").innerHTML = `
       <div class="hero">
         <p class="quote">${h.heroQuote}</p>
         <p class="big-q">환율이 싸다 <em>=</em> 여행이 싸다<em>?</em></p>
@@ -1375,10 +1376,188 @@
     $("#quizAgain").addEventListener("click", renderQuizMenu);
   }
 
+  // ═════════════ 최종판 (2026-10-04) — 내용은 final.js ═════════════
+  // 탐구가 끝난 뒤의 화면 여섯 개. 예전 홈은 '처음 홈'(#start)으로 옮겨 '지나온 길'에서 연다.
+  const ext = (url, label, cls) => `<a class="${cls || "btn-ghost"}" href="${url}" target="_blank" rel="noopener noreferrer">${label}</a>`;
+
+  function renderFinalHome() {
+    const h = FINAL.home, L = FINAL.links;
+    $("#view-home").innerHTML = `
+      <div class="hero fin-hero">
+        <p class="quote">${h.eyebrow}</p>
+        <p class="big-q">${h.title}</p>
+        <p class="lead">${h.lead}</p>
+        <div class="fin-links">
+          ${ext(L.app, "결과물 앱 열기", "btn-primary")}
+          ${ext(L.slides, "발표 슬라이드")}
+          <a class="btn-ghost" href="#present">발표 준비</a>
+        </div>
+      </div>
+
+      ${sectionHead("Results", "최종 결과 세 줄", `실제 탐구 결과입니다. 숫자마다 어디서 나왔는지 적었습니다(${FINAL.asOf} 기준).`)}
+      ${h.results
+        .map((r, i) => `<article class="card fin-result"><span class="fin-n">${i + 1}</span><h3>${r.head}</h3>
+          <p class="definition">${r.body}</p><p class="fin-src">출처 · ${r.src}</p></article>`)
+        .join("")}
+
+      ${sectionHead("Guide Map", "이 가이드에서 할 수 있는 것")}
+      <div class="fin-map">${h.map.map((m) => `<a class="fin-tile" href="#${m.tab}"><b>${m.title}</b><span>${m.desc}</span></a>`).join("")}</div>
+    `;
+  }
+
+  function renderPath() {
+    const p = FINAL.path;
+    $("#view-path").innerHTML = `
+      ${sectionHead("The Road So Far", "지나온 길", p.intro)}
+      <ol class="fin-road">
+        ${p.steps
+          .map((s) => `<li class="card">
+            <p class="fin-when">${s.when}</p>
+            <h3>${s.title}</h3>
+            <p class="definition">${s.did}</p>
+            <dl class="fin-dl">
+              <dt>정한 것</dt><dd>${s.decided}</dd>
+              <dt>이유</dt><dd>${s.why}</dd>
+              <dt>나중에 보니</dt><dd>${s.later}</dd>
+            </dl>
+          </li>`)
+          .join("")}
+      </ol>
+
+      ${sectionHead("Archive", "준비하던 때의 탭", "지우지 않고 그대로 두었습니다. 그때 무엇을 보며 준비했는지 궁금하면 열어 보세요.")}
+      <div class="fin-map">${p.archive.map((a) => `<a class="fin-tile" href="#${a.tab}"><b>${a.label}</b><span>${a.desc}</span></a>`).join("")}</div>
+
+      ${sectionHead("Next", p.nextIdeas.title, p.nextIdeas.intro)}
+      <article class="card"><ul class="points">${p.nextIdeas.items.map((i) => `<li>${i}</li>`).join("")}</ul></article>
+    `;
+  }
+
+  function renderInside() {
+    const d = FINAL.inside;
+    $("#view-inside").innerHTML = `
+      ${sectionHead("Inside the App", "결과물 앱 뜯어보기", d.intro)}
+      <div class="fin-flow">
+        ${d.flow
+          .map((f, i) => `<div class="fin-stage"><p class="fin-stage-k">${i + 1}. ${f.k}</p>
+            <ul>${f.items.map((x) => `<li>${x}</li>`).join("")}</ul><p class="fin-stage-note">${f.note}</p></div>`)
+          .join(`<span class="fin-arrow" aria-hidden="true">→</span>`)}
+      </div>
+
+      ${sectionHead("Scripts", "스크립트 11개 — 무엇을 · 왜 · 핵심 한 줄", "다시 만들 때는 01~07 → 09 → 10 → 08 → 11 순서로 돌립니다. 눌러서 펼치고, 마지막 질문에 소리 내어 답해 보세요.")}
+      ${d.scripts
+        .map((s) => `<details class="card fin-script">
+          <summary><span class="fin-n">${s.n}</span><span><code>${s.file}</code><br>${s.what}</span></summary>
+          <p class="definition"><b>왜</b> · ${s.why}</p>
+          <div class="st-code"><pre>${esc(s.line)}</pre></div>
+          <p class="fin-src">${s.lineNote}</p>
+          <p class="fin-ask">스스로 답해 보기 · ${s.ask}</p>
+        </details>`)
+        .join("")}
+
+      ${sectionHead("Screens", "화면 6개 — 무엇을 보여 주고, 숫자는 어디서 오나")}
+      <article class="card"><div class="tbl-wrap"><table class="tbl">
+        <thead><tr><th>화면</th><th>보여 주는 것</th><th>숫자의 출처</th><th>받을 만한 질문</th></tr></thead>
+        <tbody>${d.screens.map((s) => `<tr><td><strong>${s.name}</strong></td><td>${s.shows}</td><td>${s.from}</td><td>${s.ask}</td></tr>`).join("")}</tbody>
+      </table></div>
+      <p class="fin-src" style="margin-top:10px">직접 열어 보기 · ${ext(FINAL.links.app, "결과물 앱", "fin-inline")}</p></article>
+
+      ${sectionHead("Why", "이렇게 만든 이유")}
+      ${d.whys.map((w) => `<article class="card"><h3>${w.q}</h3><p class="definition">${esc(w.a)}</p></article>`).join("")}
+    `;
+  }
+
+  function renderLessons() {
+    const l = FINAL.lessons;
+    const view = $("#view-lessons");
+    view.innerHTML = `
+      ${sectionHead("Lessons", "이번 탐구에서 배운 것", l.intro)}
+      ${l.cards
+        .map((c, i) => `<article class="card fin-lesson">
+          <div class="db-head"><span class="db-n">${i + 1}</span><h3>${c.title}</h3></div>
+          <p class="definition">${c.story}</p>
+          ${i === 6 ? `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>AI가 한 실수</th><th>사람이 찾아 고친 것</th></tr></thead>
+            <tbody>${l.aiCases.map((a) => `<tr><td>${a.what}</td><td>${a.fix}</td></tr>`).join("")}</tbody></table></div>` : ""}
+          <p class="fin-rule">${c.rule}</p>
+        </article>`)
+        .join("")}
+      <article class="card">
+        <h3>내 말로 적기</h3>
+        <p class="definition">아홉 장 중 나에게 가장 중요했던 것 하나와, 다음 탐구에서 다르게 할 것 하나를 적어 보세요. 이 기기에만 저장됩니다.</p>
+        ${savedField("fin-lesson-best", "가장 중요했던 것과 이유", "예: 3번 — 처음에 수준끼리 비교했다면 …", 3)}
+        ${savedField("fin-lesson-next", "다음 탐구에서 다르게 할 것", "", 3)}
+      </article>
+    `;
+    bindFields(view);
+  }
+
+  function renderTravel() {
+    const t = FINAL.travel;
+    const view = $("#view-travel");
+    view.innerHTML = `
+      ${sectionHead("Use It for Real", "여행 갈 때 이렇게 쓰기", t.intro)}
+      ${t.steps
+        .map((s, i) => `<article class="card">
+          <div class="db-head"><span class="db-n">${i + 1}</span><h3>${s.title}</h3></div>
+          <p class="fin-when">${s.when}</p>
+          <ul class="points">${s.items.map((x) => `<li>${x}</li>`).join("")}</ul>
+        </article>`)
+        .join("")}
+      ${ext(FINAL.links.app, "결과물 앱에서 예산 짜 보기", "btn-primary")}
+
+      ${sectionHead("Add a City", t.agent.title)}
+      <article class="card">
+        <p class="definition">${t.agent.intro}</p>
+        ${codeBox(t.agent.say)}
+        <p class="fin-rule">${t.agent.warn}</p>
+      </article>
+    `;
+    bindCopy(view);
+  }
+
+  function renderPresent() {
+    const p = FINAL.present, L = FINAL.links;
+    const total = p.goals.reduce((a, g) => a + g.sec, 0);
+    const view = $("#view-present");
+    view.innerHTML = `
+      ${sectionHead("Final Talk", "최종발표 준비", p.intro)}
+      <article class="card">
+        <div class="fin-frame"><iframe src="${L.slides}#1" title="최종발표 슬라이드 미리 보기" loading="lazy"></iframe></div>
+        <p class="fin-src" style="margin-top:8px">슬라이드 안을 누르면 넘어갑니다(왼쪽 1/3을 누르면 이전 장).</p>
+        <div class="fin-links">
+          ${ext(L.present, "발표 연습 페이지(대본 · 타이머 · 예상 질문)", "btn-primary")}
+          ${ext(L.slides, "슬라이드만 크게")}
+          ${ext(L.pdf, "PDF")}
+        </div>
+      </article>
+
+      ${sectionHead("Seven Slides", `장마다 목표 — 합계 ${Math.floor(total / 60)}분 ${total % 60}초`)}
+      <article class="card"><div class="tbl-wrap"><table class="tbl">
+        <thead><tr><th>장</th><th>이 장의 질문</th><th>한 줄 정리</th><th>시간</th></tr></thead>
+        <tbody>${p.goals.map((g) => `<tr><td>${g.n}</td><td><strong>${g.q}</strong></td><td>${g.take}</td><td style="white-space:nowrap">${g.sec}초</td></tr>`).join("")}</tbody>
+      </table></div></article>
+
+      ${sectionHead("Rehearsal", "리허설 체크")}
+      <article class="card"><ul class="check-list">
+        ${p.rehearsal.map((r) => `<li><label><input type="checkbox" data-check="${r.id}"><span class="c-task">${r.t}</span></label></li>`).join("")}
+      </ul></article>
+
+      ${sectionHead("Q&A", "예상 질문 — 내 답 적기", "먼저 내 말로 적고, 근거는 발표 연습 페이지의 예상 질문에서 확인하세요. 이 기기에만 저장됩니다.")}
+      ${p.questions.map((q, i) => `<article class="card">${savedField("fin-qa-" + (i + 1), "Q" + (i + 1) + ". " + q, "", 2)}</article>`).join("")}
+    `;
+    bindCheckboxes(view);
+    bindFields(view);
+  }
+
   // ───────────── 시작 ─────────────
   initTheme();
   initDday();
   renderHome();
+  renderFinalHome();
+  renderPath();
+  renderInside();
+  renderLessons();
+  renderTravel();
+  renderPresent();
   renderGo();
   renderTodo();
   renderTalk();

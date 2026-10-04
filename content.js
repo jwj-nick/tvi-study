@@ -2145,7 +2145,8 @@ const CONTENT = {
 
   // ─────────────────────── 퀴즈 세트 정의 ───────────────────────
   quizSets: [
-    { id: "all",       label: "전체",        desc: "36문항 전부", filter: () => true },
+    { id: "result",    label: "최종 결과",   desc: "실제 탐구 결과 10문항 — 발표 전에 풀기", filter: (q) => q.category === "result" },
+    { id: "all",       label: "전체",        desc: "46문항 전부", filter: () => true },
     { id: "economics", label: "경제",        desc: "환율·물가·지수·해석", filter: (q) => q.category === "economics" },
     { id: "tech",      label: "컴퓨터·기술", desc: "폴더·터미널·git·데이터 다루기", filter: (q) => q.category === "tech" },
     { id: "project",   label: "발표 대비",   desc: "예상 질문을 4지선다로", filter: (q) => q.topic.startsWith("프로젝트:") },

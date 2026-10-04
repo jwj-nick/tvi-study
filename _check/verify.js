@@ -3,6 +3,7 @@ const fs = require("fs");
 const dir = "C:/Kids/71_High_Projects/2608_TVI_app/";
 const CONTENT = eval(fs.readFileSync(dir + "content.js", "utf8") + "\nCONTENT");
 const QUESTIONS = eval(fs.readFileSync(dir + "questions.js", "utf8") + "\nQUESTIONS");
+const FINAL = eval(fs.readFileSync(dir + "final.js", "utf8") + "\nFINAL");
 
 let fail = 0;
 const check = (cond, msg) => { if (!cond) { console.log("  FAIL: " + msg); fail++; } };
@@ -72,11 +73,12 @@ check(nb.observe.look.length === 3, "numbeo 관찰 포인트 3개");
 // STEP 2·4가 각각 가이드를 달고 있는지
 const guided = CONTENT.todo.blocks.filter((b) => b.guide).map((b) => b.step + ":" + b.guide);
 check(guided.join(",") === "STEP 2:observe,STEP 4:collect", "가이드 배치: " + guided.join(", "));
+const TAB_NAMES = ["home", "inside", "lessons", "travel", "present", "path", "start", "go", "todo", "talk", "design", "next", "computer", "economy", "data", "quiz", "three"];
 // 페이지 내 앵커(#nb 같은)가 남아 있지 않은지 — 해시 라우터와 충돌한다
 const anchors = JSON.stringify(CONTENT).match(/href=\\"#[a-z-]+/g) || [];
 const badAnchors = anchors.filter((a) => {
   const t = a.split("#")[1];
-  return !["home", "go", "todo", "talk", "design", "next", "computer", "economy", "data", "quiz", "three"].includes(t);
+  return !TAB_NAMES.includes(t);
 });
 check(!badAnchors.length, "콘텐츠에 탭이 아닌 앵커가 있음: " + badAnchors.join(", "));
 
@@ -256,3 +258,25 @@ check(!/ecos\.bok\.or\.kr\/api\/StatisticSearch\/(?!sample)/.test(goText), "go: 
 check(go.blocks.some((b) => b.guide === "collect"), "go: Numbeo 수집 안내 상자 연결");
 
 console.log(fail === 0 ? "\nALL CHECKS PASSED" : `\n${fail} CHECK(S) FAILED`);
+
+// ─────────── 최종판 (final.js, 2026-10-04) ───────────
+// 결과 · 회고 부분은 실제 숫자를 쓰는 대신, 결과마다 출처가 있어야 한다.
+check(FINAL.home.results.length === 3 && FINAL.home.results.every((r) => r.head && r.body && r.src), "final.home.results: 3줄, 모두 출처(src)");
+check(FINAL.home.map.every((m) => TAB_NAMES.includes(m.tab)), "final.home.map: 모두 탭 이름");
+check(FINAL.path.archive.every((a) => TAB_NAMES.includes(a.tab)), "final.path.archive: 모두 탭 이름");
+FINAL.path.steps.forEach((s, i) => ["when", "title", "did", "decided", "why", "later"].forEach((k) => check(s[k], `final.path.steps[${i}].${k}`)));
+check(FINAL.inside.scripts.length === 11, "final.inside.scripts 11개");
+FINAL.inside.scripts.forEach((s, i) => {
+  ["n", "file", "what", "why", "line", "lineNote", "ask"].forEach((k) => check(s[k], `final.inside.scripts[${i}].${k}`));
+  check(s.file.startsWith(s.n + "_"), `final.inside.scripts[${i}] 번호와 파일명이 다름`);
+});
+check(FINAL.lessons.cards.length === 9 && FINAL.lessons.aiCases.length === 4, "final.lessons 카드 9 · AI 사례 4");
+check(FINAL.present.goals.reduce((a, g) => a + g.sec, 0) === 295, "final.present.goals 합계 295초(4분 55초)");
+check(FINAL.present.questions.length === 8, "final.present.questions 8개");
+const finalAnchors = (JSON.stringify(FINAL).match(/#[a-z]+/g) || []).filter((a) => !TAB_NAMES.includes(a.slice(1)) && !/^#[0-9]/.test(a));
+check(!finalAnchors.length, "final.js에 탭이 아닌 앵커: " + finalAnchors.join(", "));
+const rehearsalIds = FINAL.present.rehearsal.map((r) => r.id);
+check(rehearsalIds.every((id) => !checkIds.includes(id)) && new Set(rehearsalIds).size === rehearsalIds.length, "final 리허설 체크 id가 기존 id와 겹침");
+check(/school|학교명/.test(JSON.stringify(FINAL)) === false, "final.js에 학교 이름 자리 표시가 있음");
+check(QUESTIONS.filter((q) => q.category === "result").every((q) => /출처|기사|외교부|결과 보고서/.test(q.explanation) || q.id === 39), "최종 결과 퀴즈: 해설에 출처");
+console.log(fail === 0 ? "\nFINAL OK" : `\n${fail} PROBLEM(S) (final 포함)`);
