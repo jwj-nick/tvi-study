@@ -206,7 +206,9 @@ const fh = views["view-home"] || "", fp = views["view-path"] || "", fi = views["
 const fl = views["view-lessons"] || "", ft = views["view-travel"] || "", fpr = views["view-present"] || "";
 [
   [(fh.match(/class="card fin-result"/g) || []).length === 3, "홈: 최종 결과 3줄"],
-  [(fh.match(/class="fin-src"/g) || []).length === 3, "홈: 결과마다 출처"],
+  [(fh.match(/<p class="fin-src">출처 · /g) || []).length === 3, "홈: 결과마다 출처"],
+  [fh.includes('<video') && fh.includes('src="video/tvi_3min.mp4"') && fh.includes('kind="subtitles"'), "홈: 3분 영상 + 자막"],
+  [(fh.match(/class="fin-make-step"/g) || []).length === 6, "홈: 영상 만든 과정 6단계"],
   [(fh.match(/class="fin-tile"/g) || []).length === 6, "홈: 가이드 지도 6칸"],
   [fh.includes("jwj-nick.github.io/high1/tvi/"), "홈: 결과물 앱 링크"],
   [(fp.match(/<dt>나중에 보니<\/dt>/g) || []).length === 8, "지나온 길: 시점 8개, 모두 '나중에 보니'"],

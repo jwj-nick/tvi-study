@@ -1982,3 +1982,13 @@ html[data-theme="dark"] .fin-n { color: #0E1916; }
 .fin-frame { position: relative; width: 100%; aspect-ratio: 16 / 9; background: #111; border-radius: 8px; overflow: hidden; }
 .fin-frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
 .fin-inline { color: var(--teal); }
+
+.fin-video video { width: 100%; aspect-ratio: 16 / 9; background: #111; border-radius: 10px; display: block; margin-top: 8px; }
+.fin-make { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 10px; margin-bottom: 14px; }
+.fin-make-step { background: var(--surface); border: 1px solid var(--line); border-top: 4px solid var(--teal); border-radius: 10px; padding: 12px 14px; box-shadow: var(--shadow); }
+.fin-make-step span { font-size: 1.6rem; display: block; }
+.fin-make-step b { display: block; margin: 4px 0; }
+.fin-make-step p { font-size: 0.84rem; color: var(--muted); }
+ol.fin-try { list-style: decimal; padding-left: 20px; }
+ol.fin-try li::before { content: none; display: none; }
+ol.fin-try li { padding-left: 2px; }

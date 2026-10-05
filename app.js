@@ -1382,7 +1382,17 @@
 
   function renderFinalHome() {
     const h = FINAL.home, L = FINAL.links;
+    const v = FINAL.video, m = v.making;
     $("#view-home").innerHTML = `
+      <article class="card fin-video">
+        <h3>${v.title}</h3>
+        <video controls preload="none" playsinline poster="${v.poster}">
+          <source src="${v.src}" type="video/mp4">
+          <track kind="subtitles" src="${v.vtt}" srclang="ko" label="한국어" default>
+        </video>
+        <p class="fin-src">${v.note}</p>
+      </article>
+
       <div class="hero fin-hero">
         <p class="quote">${h.eyebrow}</p>
         <p class="big-q">${h.title}</p>
@@ -1399,6 +1409,14 @@
         .map((r, i) => `<article class="card fin-result"><span class="fin-n">${i + 1}</span><h3>${r.head}</h3>
           <p class="definition">${r.body}</p><p class="fin-src">출처 · ${r.src}</p></article>`)
         .join("")}
+
+      ${sectionHead("Making Of", m.title, m.intro)}
+      <div class="fin-make">${m.steps.map((s) => `<div class="fin-make-step"><span>${s.icon}</span><b>${s.t}</b><p>${s.d}</p></div>`).join("")}</div>
+      <article class="card">
+        <p class="fin-ask">${esc(m.ask)}</p>
+        <h3 style="margin-top:14px">나도 해 보기</h3>
+        <ol class="points fin-try">${m.try.map((x) => `<li>${x}</li>`).join("")}</ol>
+      </article>
 
       ${sectionHead("Guide Map", "이 가이드에서 할 수 있는 것")}
       <div class="fin-map">${h.map.map((m) => `<a class="fin-tile" href="#${m.tab}"><b>${m.title}</b><span>${m.desc}</span></a>`).join("")}</div>
